@@ -77,27 +77,36 @@ find_package(spdlog CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(intx CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
-
+find_package(cpr CONFIG REQUIRED)
 
 add_library(daml-sdk STATIC)
 target_compile_features(daml-sdk PUBLIC cxx_std_23)
 
 target_sources(daml-sdk
     PRIVATE
-      src/utils/sign.impl.cpp
+      src/crypto/sign.impl.cpp
+      src/crypto/token.impl.cpp
+      src/api/ssl_connection.impl.cpp
     PUBLIC
         FILE_SET cxx_modules TYPE CXX_MODULES FILES
+            src/api/ssl_connection.cppm
+            src/api/registry.cppm
+            src/api/client.cppm
+            
+            src/crypto/sign.cppm
+            src/crypto/token.cppm
+            
             src/model/datatype.cppm
             src/model/request.cppm
             src/model/response.cppm
-            
-            src/utils/sign.cppm
-            
+                        
             src/type/decimal.cppm
             
             src/model/model.cppm
             src/utils/utils.cppm
             src/type/type.cppm
+            src/api/api.cppm
+            src/crypto/crypto.cppm
             
             src/daml.cppm
 )
@@ -112,6 +121,7 @@ target_link_libraries(daml-sdk
     OpenSSL::Crypto
     spdlog::spdlog
     fmt::fmt
+    cpr::cpr
 )
 
 add_library(daml-sdk::daml-sdk ALIAS daml-sdk)
