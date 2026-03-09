@@ -7,6 +7,7 @@
     "spdlog",
     "intx",
     "nlohmann-json",
-    "cpr"
+    "cpr",
+    "gtest"
   ]
 }

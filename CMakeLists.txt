@@ -112,3 +112,28 @@ target_link_libraries(daml-sdk PRIVATE
     fmt::fmt
     nlohmann_json::nlohmann_json
 )
+
+add_library(daml-sdk::daml-sdk ALIAS daml-sdk)
+
+
+#Testing
+enable_testing()
+
+find_package(GTest CONFIG REQUIRED)
+
+add_executable(run_tests)
+target_compile_features(run_tests PUBLIC cxx_std_23)
+
+target_sources(run_tests
+  PRIVATE
+    tests/test_decimal.cpp)
+
+target_link_libraries(run_tests
+    PRIVATE
+        GTest::gtest
+        GTest::gtest_main
+        daml-sdk::daml-sdk
+)
+
+include(GoogleTest)
+gtest_discover_tests(run_tests)
