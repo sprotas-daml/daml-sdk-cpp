@@ -9,7 +9,7 @@ module;
 
 export module daml.model:datatype;
 
-import daml.decimal;
+import daml.type;
 
 export namespace daml::model::datatype
 {
@@ -51,15 +51,15 @@ struct PaymentTransferContext
 struct AppRewardBeneficiary
 {
     std::string beneficiary;
-    decimal weight;
+    decimal::decimal weight;
 };
 
 // data TransferOutput AmuletRules.daml
 struct TransferOutput
 {
     std::string receiver;
-    decimal receiverFeeRatio;
-    decimal amount;
+    decimal::decimal receiverFeeRatio;
+    decimal::decimal amount;
     std::optional<json> lock; // TODO: complete type
 };
 // data TransferOutput AmuletRules.daml

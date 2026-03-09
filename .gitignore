@@ -1,6 +1,5 @@
 vcpkg_installed
 build
-vcpkg
 .env
 .idea
 .cache

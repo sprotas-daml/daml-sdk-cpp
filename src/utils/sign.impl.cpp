@@ -7,7 +7,7 @@ module;
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
-module daml.utils:sign;
+module daml.utils;
 
 namespace daml::sign
 {
@@ -20,7 +20,7 @@ std::vector<unsigned char> hexToBytes(const std::string &hex)
     {
         std::string byteString = hex.substr(i, 2);
 
-        auto byte = static_cast<unsigned char>(std::stol(byteString.c_str(), nullptr, 16));
+        auto byte = static_cast<unsigned char>(std::stol(byteString, nullptr, 16));
         bytes.push_back(byte);
     }
     return bytes;

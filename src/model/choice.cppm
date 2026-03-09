@@ -8,7 +8,7 @@ module;
 
 export module daml.model:choice;
 
-import daml.decimal;
+import daml.type;
 import :datatype;
 
 export namespace daml::model::choice
