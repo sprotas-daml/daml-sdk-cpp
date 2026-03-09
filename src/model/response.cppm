@@ -42,7 +42,6 @@ struct ExercisedEvent
     std::string packageName;
     std::vector<std::string> implementedInterfaces;
     bool acsDelta;
-
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExercisedEvent, contractId, templateId, choice, consuming,
                                                 choiceArgument, exerciseResult)
@@ -81,4 +80,4 @@ struct Update
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Update, update)
 
-} // namespace daml_sdk::model::request
+} // namespace daml::model::response

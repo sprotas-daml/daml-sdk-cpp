@@ -159,4 +159,4 @@ struct Transfer
 };
 // data Transfer AmuletRules.daml
 
-} // namespace daml_sdk::model::datatype
+} // namespace daml::model::datatype

@@ -54,20 +54,19 @@ std::vector<unsigned char> base64_decode(const std::string &input)
 
 std::string base64_encode(const std::vector<unsigned char> &data)
 {
-  if (data.empty()) return "";
-  
+    if (data.empty())
+        return "";
+
     std::string dest;
-    dest.resize(4 * ((data.size() + 2) / 3)); 
-  
-    int len = EVP_EncodeBlock(reinterpret_cast<unsigned char *>(dest.data()), 
-                              data.data(), 
-                              data.size());
+    dest.resize(4 * ((data.size() + 2) / 3));
+
+    int len = EVP_EncodeBlock(reinterpret_cast<unsigned char *>(dest.data()), data.data(), data.size());
     dest.resize(len);
     return dest;
 }
 
 std::vector<unsigned char> sign_with_ED25519_raw_key(const std::vector<unsigned char> &rawKeyBytes,
-                                                 const std::vector<unsigned char> &rawData)
+                                                     const std::vector<unsigned char> &rawData)
 {
     if (rawKeyBytes.size() != 64)
     {
@@ -152,4 +151,4 @@ std::string sign_transaction(const std::string &transactionHash, const std::stri
 
     return signatureBase64;
 }
-} // namespace sign
+} // namespace daml::crypto::sign

@@ -119,4 +119,4 @@ class TokenManager
 
 std::mutex token_manager_mutex;
 std::optional<TokenManager> token_manager_inst;
-} // namespace token_manager
+} // namespace daml::crypto::token

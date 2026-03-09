@@ -2,12 +2,12 @@ module;
 
 #include <chrono>
 #include <cpr/cpr.h>
+#include <nlohmann/json.hpp>
 #include <optional>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include <nlohmann/json.hpp>
 
 module daml.api;
 
@@ -71,4 +71,4 @@ cpr::Session &SslConnection::getSession()
 {
     return session;
 }
-} // namespace ssl_connection
+} // namespace daml::api::ssl_connection
