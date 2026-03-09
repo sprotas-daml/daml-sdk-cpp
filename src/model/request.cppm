@@ -3,8 +3,8 @@ module;
 #include <nlohmann/detail/macro_scope.hpp>
 #include <nlohmann/json.hpp>
 
-#include <optional>
 #include <string>
+#include <variant>
 #include <vector>
 
 export module daml.model:request;
@@ -32,12 +32,42 @@ struct CreateCommand
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(CreateCommand, createArguments, templateId)
 
-struct CommandWrapper
+using CommandWrapper = std::variant<ExerciseCommand, CreateCommand>;
+
+inline void to_json(json &j, const CommandWrapper &v)
 {
-    std::optional<ExerciseCommand> ExerciseCommand;
-    std::optional<CreateCommand> CreateCommand;
-};
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(CommandWrapper, ExerciseCommand, CreateCommand)
+    j = json::object();
+    std::visit(
+        [&](auto &&arg) {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, ExerciseCommand>)
+            {
+                to_json(j["ExerciseCommand"], arg);
+            }
+            else if constexpr (std::is_same_v<T, CreateCommand>)
+            {
+                to_json(j["CreateCommand"], arg);
+            }
+            j = arg;
+        },
+        v);
+}
+
+inline void from_json(const json &j, CommandWrapper &v)
+{
+    if (j.contains("ExerciseCommand"))
+    {
+        v = j.at("ExerciseCommand").get<ExerciseCommand>();
+    }
+    else if (j.contains("CreateCommand"))
+    {
+        v = j.at("CreateCommand").get<CreateCommand>();
+    }
+    else
+    {
+        throw std::runtime_error("Invalid json object: missing CommandWrapper tag");
+    }
+}
 
 struct BaseSubmit
 {
@@ -99,4 +129,4 @@ struct SubmitSignedTransaction
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SubmitSignedTransaction, userId, submissionId, hashingSchemeVersion,
                                                 preparedTransaction, deduplicationPeriod, partySignatures)
-} // namespace daml_sdk::model::request
+} // namespace daml::model::request

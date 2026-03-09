@@ -88,7 +88,6 @@ target_sources(daml-sdk
     PUBLIC
         FILE_SET cxx_modules TYPE CXX_MODULES FILES
             src/model/datatype.cppm
-            src/model/choice.cppm
             src/model/request.cppm
             src/model/response.cppm
             
@@ -105,12 +104,14 @@ target_sources(daml-sdk
 
 target_include_directories(daml-sdk PUBLIC src)
 
-target_link_libraries(daml-sdk PRIVATE
+target_link_libraries(daml-sdk
+  PUBLIC
+    nlohmann_json::nlohmann_json
+  PRIVATE
     OpenSSL::SSL
     OpenSSL::Crypto
     spdlog::spdlog
     fmt::fmt
-    nlohmann_json::nlohmann_json
 )
 
 add_library(daml-sdk::daml-sdk ALIAS daml-sdk)
