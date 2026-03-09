@@ -1,0 +1,12 @@
+{
+  "name": "daml-sdk",
+  "version": "1.0.0",
+  "dependencies": [
+    "fmt",
+    "openssl",
+    "spdlog",
+    "intx",
+    "nlohmann-json",
+    "cpr"
+  ]
+}
