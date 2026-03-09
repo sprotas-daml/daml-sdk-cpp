@@ -9,7 +9,7 @@ module;
 
 export module daml.model:request;
 
-import daml.decimal;
+import daml.type;
 import :datatype;
 
 export namespace daml::model::request
