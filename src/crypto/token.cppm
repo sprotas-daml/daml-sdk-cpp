@@ -119,4 +119,8 @@ class TokenManager
 
 std::mutex token_manager_mutex;
 std::optional<TokenManager> token_manager_inst;
+
+std::string get_token(std::string_view key);
+std::string get_user_id(std::string_view key);
+
 } // namespace daml::crypto::token

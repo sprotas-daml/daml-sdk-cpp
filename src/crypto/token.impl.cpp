@@ -163,3 +163,22 @@ void TokenManager::f_load(std::string_view key)
         m_token_data.decoded_json = decode_jwt_payload(blob);
     }
 }
+
+std::string get_token(std::string_view key)
+{
+    std::lock_guard lock(token_manager_mutex);
+    if (!token_manager_inst)
+        throw std::runtime_error("token manager is null");
+
+    token_manager_inst->update_lazy(key);
+    return token_manager_inst->get_token();
+}
+std::string get_user_id(std::string_view key)
+{
+    std::lock_guard lock(token_manager_mutex);
+    if (!token_manager_inst)
+        throw std::runtime_error("token manager is null");
+
+    token_manager_inst->update_lazy(key);
+    return token_manager_inst->get_user_id();
+}
