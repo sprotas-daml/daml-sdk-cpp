@@ -3,8 +3,10 @@ module;
 #include <nlohmann/detail/macro_scope.hpp>
 #include <nlohmann/json.hpp>
 
+#include <cstdint>
 #include <optional>
 #include <string>
+#include <variant>
 #include <vector>
 
 export module daml.model:datatype;
@@ -14,6 +16,7 @@ import daml.type;
 export namespace daml::model::datatype
 {
 using json = nlohmann::json;
+using node_int_t = std::uint32_t;
 
 struct DisclosedContract
 {
@@ -22,8 +25,22 @@ struct DisclosedContract
     std::string createdEventBlob;
     std::string synchronizerId;
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(DisclosedContract, templateId, contractId, createdEventBlob,
-                                                synchronizerId)
+
+struct Round : public DisclosedContract
+{
+    node_int_t round_number{};
+
+    std::chrono::system_clock::time_point opens_at;
+    std::chrono::system_clock::time_point target_closes_at;
+
+    std::optional<decimal::decimal> issuing_round_coefficient;
+};
+struct OpenAndIssuingRounds
+{
+    std::vector<Round> open_rounds;
+    std::vector<Round> issuing_rounds;
+};
+
 struct RoundNumber
 {
     std::int64_t number;

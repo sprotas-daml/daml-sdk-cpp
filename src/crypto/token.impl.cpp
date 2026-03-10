@@ -63,7 +63,7 @@ void TokenManager::load_token()
     spdlog::info("[TokenManager] loadToken from server, MUST NOT BE EXECUTED OFTEN");
 
     api::ssl_connection::SslConnection connection(m_secrets.base_url, m_timeout);
-    connection.append_path("oauth").append_path("token");
+    connection / "oauth" / "token";
 
     auto &session = connection.getSession();
 

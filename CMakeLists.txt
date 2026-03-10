@@ -93,14 +93,23 @@ target_sources(daml-sdk
             src/api/registry.cppm
             src/api/client.cppm
             
+            src/api/request/ledger.cppm
+            src/api/request/scan.cppm
+            src/api/request/submit.cppm
+            
             src/crypto/sign.cppm
             src/crypto/token.cppm
             
             src/model/datatype.cppm
             src/model/request.cppm
             src/model/response.cppm
-                        
+     
             src/type/decimal.cppm
+            
+            src/utils/json_literals.cppm
+            src/utils/uuid.cppm
+            src/utils/error.cppm
+            src/utils/time.cppm
             
             src/model/model.cppm
             src/utils/utils.cppm

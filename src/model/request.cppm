@@ -15,6 +15,7 @@ import :datatype;
 export namespace daml::model::request
 {
 using json = nlohmann::json;
+using int_t = int32_t;
 
 struct ExerciseCommand
 {
@@ -34,21 +35,21 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(CreateCommand, createArguments, 
 
 using CommandWrapper = std::variant<ExerciseCommand, CreateCommand>;
 
+template <typename T, std::enable_if_t<std::is_same_v<T, CommandWrapper>, int> = 0>
 inline void to_json(json &j, const CommandWrapper &v)
 {
     j = json::object();
     std::visit(
         [&](auto &&arg) {
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr (std::is_same_v<T, ExerciseCommand>)
+            using V = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<V, ExerciseCommand>)
             {
-                to_json(j["ExerciseCommand"], arg);
+                j["ExerciseCommand"] = arg;
             }
-            else if constexpr (std::is_same_v<T, CreateCommand>)
+            else if constexpr (std::is_same_v<V, CreateCommand>)
             {
-                to_json(j["CreateCommand"], arg);
+                j["CreateCommand"] = arg;
             }
-            j = arg;
         },
         v);
 }
@@ -129,4 +130,146 @@ struct SubmitSignedTransaction
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SubmitSignedTransaction, userId, submissionId, hashingSchemeVersion,
                                                 preparedTransaction, deduplicationPeriod, partySignatures)
+
+// Requests to ledger
+
+struct InterfaceFilter
+{
+    struct InterfaceFilterValue
+    {
+        std::string interfaceId;
+        bool includeCreatedEventBlob{};
+        bool includeInterfaceView{};
+    } value;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(InterfaceFilter::InterfaceFilterValue, interfaceId,
+                                                includeCreatedEventBlob, includeInterfaceView)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(InterfaceFilter, value)
+
+struct TemplateFilter
+{
+    struct TemplateFilterValue
+    {
+        std::string templateId;
+        bool includeCreatedEventBlob{};
+
+    } value;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(TemplateFilter::TemplateFilterValue, templateId,
+                                                includeCreatedEventBlob)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(TemplateFilter, value)
+
+struct WildcardFilter
+{
+    struct WildcardFilterValue
+    {
+        bool includeCreatedEventBlob;
+    } value;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(WildcardFilter::WildcardFilterValue, includeCreatedEventBlob)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(WildcardFilter, value)
+
+using FilterVariant = std::variant<InterfaceFilter, TemplateFilter, WildcardFilter>;
+
+template <typename T, std::enable_if_t<std::is_same_v<T, FilterVariant>, int> = 0>
+inline void to_json(nlohmann::json &j, const FilterVariant &v)
+{
+    j = json::object();
+    std::visit(
+        [&](auto &&arg) {
+            using V = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<V, InterfaceFilter>)
+                j["InterfaceFilter"] = arg;
+            else if constexpr (std::is_same_v<V, TemplateFilter>)
+                j["TemplateFilter"] = arg;
+            else if constexpr (std::is_same_v<V, WildcardFilter>)
+                j["WildcardFilter"] = arg;
+        },
+        v);
+}
+
+inline void from_json(const nlohmann::json &j, FilterVariant &v)
+{
+    if (j.contains("InterfaceFilter"))
+    {
+        v = j.at("InterfaceFilter").get<InterfaceFilter>();
+    }
+    else if (j.contains("TemplateFilter"))
+    {
+        v = j.at("TemplateFilter").get<TemplateFilter>();
+    }
+    else if (j.contains("WildcardFilter"))
+    {
+        v = j.at("WildcardFilter").get<WildcardFilter>();
+    }
+    else
+    {
+        throw std::runtime_error("Invalid JSON: missing FilterVariant tag");
+    }
+}
+
+struct FilterPayload
+{
+    FilterVariant identifierFilter;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(FilterPayload, identifierFilter)
+
+struct CumulativeFilters
+{
+    std::vector<FilterPayload> cumulative;
+};
+void to_json(nlohmann::json &j, const CumulativeFilters &v);
+void from_json(const nlohmann::json &j, CumulativeFilters &v);
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(CumulativeFilters, cumulative)
+
+struct BaseFilter
+{
+    bool verbose;
+    json filter;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(BaseFilter, verbose, filter)
+
+struct FlatUpdatesRequest : public BaseFilter
+{
+    int_t beginExclusive;
+    int_t endInclusive;
+};
+NLOHMANN_DEFINE_DERIVED_TYPE_NON_INTRUSIVE_WITH_DEFAULT(FlatUpdatesRequest, BaseFilter, beginExclusive, endInclusive)
+
+struct ActiveContractSetRequest : public BaseFilter
+{
+    int_t activeAtOffset;
+};
+NLOHMANN_DEFINE_DERIVED_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ActiveContractSetRequest, BaseFilter, activeAtOffset)
+
+struct IncludeTransactions
+{
+    std::string transactionShape = "TRANSACTION_SHAPE_ACS_DELTA";
+    json eventFormat;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(IncludeTransactions, transactionShape, eventFormat)
+
+struct UpdateFormat
+{
+    IncludeTransactions includeTransactions;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(UpdateFormat, includeTransactions)
+
+struct UpdateByIdRequest
+{
+    std::string updateId;
+    UpdateFormat updateFormat;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(UpdateByIdRequest, updateId, updateFormat)
+
+struct ContractByIdRequest
+{
+    std::string contractId;
+    json eventFormat;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ContractByIdRequest, contractId, eventFormat)
+
 } // namespace daml::model::request

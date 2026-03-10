@@ -20,7 +20,7 @@ nlohmann::json post(const NodeConfig &config, std::string_view path, const std::
                     const nlohmann::json &body)
 {
     ssl_connection::SslConnection conn(config.url, config.timeout);
-    conn.append_path(path);
+    conn / path;
 
     std::string target_url = conn.target();
     spdlog::info("New POST request to {}", target_url);
@@ -52,7 +52,7 @@ nlohmann::json post(const NodeConfig &config, std::string_view path, const std::
 nlohmann::json get(const NodeConfig &config, std::string_view path, const std::string &token)
 {
     ssl_connection::SslConnection conn(config.url, config.timeout);
-    conn.append_path(path);
+    conn / path;
 
     std::string target_url = conn.target();
     spdlog::info("New GET request to {}", target_url);
@@ -81,16 +81,16 @@ nlohmann::json ledger_get(std::string_view path, const std::string &token)
 {
     return get(Registry::get_ledger(), path, token);
 }
-nlohmann::json scan_get(std::string_view path, const std::string &token)
+nlohmann::json scan_get(std::string_view path)
 {
-    return get(Registry::get_scan(), path, token);
+    return get(Registry::get_scan(), path, "");
 }
 nlohmann::json ledger_post(std::string_view path, const std::string &token, const nlohmann::json &body)
 {
     return post(Registry::get_ledger(), path, token, body);
 }
-nlohmann::json scan_post(std::string_view path, const std::string &token, const nlohmann::json &body)
+nlohmann::json scan_post(std::string_view path, const nlohmann::json &body)
 {
-    return post(Registry::get_scan(), path, token, body);
+    return post(Registry::get_scan(), path, "", body);
 }
 } // namespace daml::api::client

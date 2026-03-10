@@ -33,12 +33,12 @@ SslConnection::SslConnection(const std::string_view url, const std::optional<std
     session.SetSslOptions(cpr::Ssl(cpr::ssl::TLSv1_2{}));
 }
 
-SslConnection &SslConnection::append_path(std::string_view path)
+SslConnection &operator/(SslConnection &conn, std::string_view path)
 {
     if (path.empty())
-        return *this;
+        return conn;
 
-    std::string current_url = session.GetFullRequestUrl();
+    std::string current_url = conn.session.GetFullRequestUrl();
 
     bool base_has_slash = (!current_url.empty() && current_url.back() == '/');
     bool path_has_slash = (path.front() == '/');
@@ -58,8 +58,8 @@ SslConnection &SslConnection::append_path(std::string_view path)
         current_url.append(path);
     }
 
-    session.SetUrl(cpr::Url{current_url});
-    return *this;
+    conn.session.SetUrl(cpr::Url{current_url});
+    return conn;
 }
 
 std::string SslConnection::target()

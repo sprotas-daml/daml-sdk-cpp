@@ -17,7 +17,7 @@ class SslConnection
   public:
     SslConnection(std::string_view url, std::optional<std::chrono::milliseconds> timeout);
 
-    SslConnection &append_path(std::string_view path);
+    friend SslConnection &operator/(SslConnection &conn, std::string_view path);
 
     [[nodiscard]] std::string target();
 
