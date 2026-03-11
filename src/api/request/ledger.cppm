@@ -14,7 +14,7 @@ import daml.model;
 
 export namespace daml::api::request
 {
-using int_t = int32_t;
+using int_t = std::uint64_t;
 using str_ref_t = const std::string &;
 using vec_str_ref_t = const std::vector<std::string> &;
 using json = nlohmann::json;
@@ -22,6 +22,35 @@ using json = nlohmann::json;
 using namespace daml::utils::json_literals;
 using namespace daml::model::request;
 using namespace daml::model::response;
+
+bool check_and_grant_rights(str_ref_t token, str_ref_t user_id)
+{
+    auto rights = client::ledger_get("v2/users/" + user_id + "/rights", token);
+
+    if (rights.is_discarded() or !rights.is_object() or !rights.contains("rights") or !rights["rights"].is_array())
+    {
+        return false;
+    }
+
+    for (const auto &item : rights["rights"])
+    {
+        if (item.is_object() and item.contains("kind") and item["kind"].is_object())
+        {
+            if (item["kind"].contains("CanReadAsAnyParty"))
+            {
+                return true;
+            }
+        }
+    }
+
+    auto new_rights = jo{
+        "userId"_j = user_id,
+        "rights"_ja = {jo{"kind"_jo = {"CanReadAsAnyParty"_jo = {"value"_jo = {}}}}},
+    };
+    
+    client::ledger_post("v2/users/" + user_id + "/rights", token, new_rights);
+    return true;
+}
 
 int_t get_ledger_end(str_ref_t token)
 {

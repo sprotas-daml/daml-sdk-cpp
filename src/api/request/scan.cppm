@@ -13,7 +13,7 @@ import daml.type;
 
 export namespace daml::api::request
 {
-using int_t = int32_t;
+using int_t = std::uint64_t;
 using str_ref_t = const std::string &;
 using json = nlohmann::json;
 

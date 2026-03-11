@@ -1,9 +1,10 @@
 module;
 
-#include <nlohmann/json.hpp>
-#include <spdlog/spdlog.h>
 #include <string>
 #include <utility>
+
+#include <nlohmann/json.hpp>
+#include <spdlog/spdlog.h>
 
 export module daml.utils:json_literals;
 

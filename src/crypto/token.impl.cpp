@@ -125,17 +125,17 @@ std::string TokenManager::decrypt(std::string data, std::string_view key)
     return encrypt(std::move(data), key);
 }
 
-void TokenManager::f_save(std::string_view key) const
+void TokenManager::f_save() const
 {
     std::string blob = m_token_data.m_token;
-    blob = encrypt(blob, key);
+    blob = encrypt(blob, m_secrets.key);
 
     const auto filePath = std::filesystem::current_path() / "data.cache";
     std::ofstream file(filePath, std::ios::binary | std::ios::trunc);
     file.write(blob.data(), blob.size());
 }
 
-void TokenManager::f_load(std::string_view key)
+void TokenManager::f_load()
 {
     const auto filePath = std::filesystem::current_path() / "data.cache";
     std::ifstream file(filePath, std::ios::binary | std::ios::ate);
@@ -151,7 +151,7 @@ void TokenManager::f_load(std::string_view key)
     if (!file)
         throw std::runtime_error("Failed to read file: " + filePath.string());
 
-    std::string decrypted = decrypt(blob, key);
+    std::string decrypted = decrypt(blob, m_secrets.key);
     try
     {
         m_token_data.m_token = decrypted;
@@ -164,21 +164,21 @@ void TokenManager::f_load(std::string_view key)
     }
 }
 
-std::string get_token(std::string_view key)
+std::string get_token()
 {
     std::lock_guard lock(token_manager_mutex);
     if (!token_manager_inst)
         throw std::runtime_error("token manager is null");
 
-    token_manager_inst->update_lazy(key);
+    token_manager_inst->update_lazy();
     return token_manager_inst->get_token();
 }
-std::string get_user_id(std::string_view key)
+std::string get_user_id()
 {
     std::lock_guard lock(token_manager_mutex);
     if (!token_manager_inst)
         throw std::runtime_error("token manager is null");
 
-    token_manager_inst->update_lazy(key);
+    token_manager_inst->update_lazy();
     return token_manager_inst->get_user_id();
 }

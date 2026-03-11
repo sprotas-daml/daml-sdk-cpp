@@ -18,7 +18,7 @@ using namespace daml::model::response;
 using namespace daml::model::datatype;
 using namespace daml::utils;
 
-using int_t = int32_t;
+using int_t = std::uint64_t;
 using str_ref_t = const std::string &;
 using vec_str_ref_t = const std::vector<std::string> &;
 

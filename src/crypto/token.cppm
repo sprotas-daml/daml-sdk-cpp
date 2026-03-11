@@ -28,6 +28,7 @@ class TokenManager
         std::string client_id;
         std::string client_secret;
         std::string audience;
+        std::string key;
     };
     explicit TokenManager(Secrets &&secrets)
         : m_secrets(std::move(secrets)), last_lazy_update(std::chrono::system_clock::now() - 1h)
@@ -43,13 +44,14 @@ class TokenManager
         std::ranges::fill(m_secrets.client_secret, '\0');
         std::ranges::fill(m_secrets.client_id, '\0');
         std::ranges::fill(m_secrets.audience, '\0');
+        std::ranges::fill(m_secrets.key, '\0');
     }
 
-    void update_lazy(std::string_view key)
+    void update_lazy()
     {
         try
         {
-            f_load(key);
+            f_load();
         }
         catch (...)
         {
@@ -69,8 +71,8 @@ class TokenManager
         spdlog::info("[TokenManager::update_lazy()] checks passed");
         last_lazy_update = std::chrono::system_clock::now();
         load_token();
-        f_save(key);
-        f_load(key);
+        f_save();
+        f_load();
     }
 
     [[nodiscard]]
@@ -112,15 +114,15 @@ class TokenManager
 
     static std::string decrypt(std::string data, std::string_view key);
 
-    void f_save(std::string_view key) const;
+    void f_save() const;
 
-    void f_load(std::string_view key);
+    void f_load();
 };
 
 std::mutex token_manager_mutex;
 std::optional<TokenManager> token_manager_inst;
 
-std::string get_token(std::string_view key);
-std::string get_user_id(std::string_view key);
+std::string get_token();
+std::string get_user_id();
 
 } // namespace daml::crypto::token
