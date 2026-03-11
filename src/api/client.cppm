@@ -9,12 +9,14 @@ module;
 export module daml.api:client;
 
 import :registry;
-import :ssl_connection;
+import daml.utils;
 
 export namespace daml::api::client
 {
 using registry::NodeConfig;
 using registry::Registry;
+
+using namespace daml::utils;
 
 nlohmann::json post(const NodeConfig &config, std::string_view path, const std::string &token,
                     const nlohmann::json &body)

@@ -9,9 +9,9 @@ module;
 #include <string>
 #include <string_view>
 
-module daml.api;
+module daml.utils;
 
-namespace daml::api::ssl_connection
+namespace daml::utils::ssl_connection
 {
 SslConnection::SslConnection(const std::string_view url, const std::optional<std::chrono::milliseconds> timeout)
     : base_url(url)

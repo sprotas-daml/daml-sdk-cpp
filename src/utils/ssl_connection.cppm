@@ -8,9 +8,9 @@ module;
 #include <cpr/cpr.h>
 #include <nlohmann/json_fwd.hpp>
 
-export module daml.api:ssl_connection;
+export module daml.utils:ssl_connection;
 
-export namespace daml::api::ssl_connection
+export namespace daml::utils::ssl_connection
 {
 class SslConnection
 {

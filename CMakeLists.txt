@@ -86,10 +86,9 @@ target_sources(daml-sdk
     PRIVATE
       src/crypto/sign.impl.cpp
       src/crypto/token.impl.cpp
-      src/api/ssl_connection.impl.cpp
+      src/utils/ssl_connection.impl.cpp
     PUBLIC
         FILE_SET cxx_modules TYPE CXX_MODULES FILES
-            src/api/ssl_connection.cppm
             src/api/registry.cppm
             src/api/client.cppm
             
@@ -110,6 +109,7 @@ target_sources(daml-sdk
             src/utils/uuid.cppm
             src/utils/error.cppm
             src/utils/time.cppm
+            src/utils/ssl_connection.cppm
             
             src/model/model.cppm
             src/utils/utils.cppm

@@ -13,9 +13,11 @@ module;
 
 module daml.crypto;
 
-import daml.api;
+import daml.utils;
 
-using namespace daml::crypto::token;
+namespace daml::crypto::token
+{
+using namespace daml::utils;
 
 std::string base64urlDecode(const std::string &input)
 {
@@ -62,7 +64,7 @@ void TokenManager::load_token()
 {
     spdlog::info("[TokenManager] loadToken from server, MUST NOT BE EXECUTED OFTEN");
 
-    api::ssl_connection::SslConnection connection(m_secrets.base_url, m_timeout);
+    ssl_connection::SslConnection connection(m_secrets.base_url, m_timeout);
     connection / "oauth" / "token";
 
     auto &session = connection.getSession();
@@ -182,3 +184,4 @@ std::string get_user_id()
     token_manager_inst->update_lazy();
     return token_manager_inst->get_user_id();
 }
+} // namespace daml::crypto::token
