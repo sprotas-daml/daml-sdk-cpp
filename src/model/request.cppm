@@ -15,14 +15,13 @@ import :datatype;
 export namespace daml::model::request
 {
     using json = nlohmann::json;
-    using int_t = int32_t;
 
     struct ExerciseCommand
     {
-        std::string contractId;
-        std::string choice;
-        json choiceArgument;
-        std::string templateId;
+      std::string choice;
+      std::string contractId;
+      std::string templateId;
+      json choiceArgument;
     };
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExerciseCommand, contractId, choice, choiceArgument, templateId)
 
@@ -157,14 +156,14 @@ export namespace daml::model::request
 
     struct FlatUpdatesRequest : public BaseFilter
     {
-        int_t beginExclusive;
-        int_t endInclusive;
+        node_int_t beginExclusive;
+        node_int_t endInclusive;
     };
     NLOHMANN_DEFINE_DERIVED_TYPE_NON_INTRUSIVE_WITH_DEFAULT(FlatUpdatesRequest, BaseFilter, beginExclusive, endInclusive)
 
     struct ActiveContractSetRequest : public BaseFilter
     {
-        int_t activeAtOffset;
+        node_int_t activeAtOffset;
     };
     NLOHMANN_DEFINE_DERIVED_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ActiveContractSetRequest, BaseFilter, activeAtOffset)
 

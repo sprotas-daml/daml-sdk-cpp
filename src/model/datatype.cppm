@@ -16,7 +16,6 @@ import daml.type;
 export namespace daml::model::datatype
 {
 using json = nlohmann::json;
-using node_int_t = std::uint32_t;
 
 struct DisclosedContract
 {
@@ -43,7 +42,7 @@ struct OpenAndIssuingRounds
 
 struct RoundNumber
 {
-    std::int64_t number;
+    node_int_t number;
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(RoundNumber, number)
 

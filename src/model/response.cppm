@@ -5,6 +5,7 @@ module;
 
 export module daml.model:response;
 
+import daml.type;
 import daml.utils;
 
 export namespace daml::model::response
@@ -73,7 +74,7 @@ struct Update
 {
     std::string updateId;
     std::string effectiveAt;
-    int64_t offset = 0;
+    node_int_t offset = 0;
     std::vector<EventWrapper> events;
 };
 
@@ -102,7 +103,7 @@ inline void from_json(const nlohmann::json &j, Update &u)
 
     u.updateId = value_node.value("updateId", "");
     u.effectiveAt = value_node.value("effectiveAt", "");
-    u.offset = value_node.value("offset", 0LL);
+    u.offset = value_node.value("offset", 0);
 
     if (value_node.contains("events") && !value_node["events"].is_null())
     {
@@ -177,7 +178,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(PreparedTransactionResponse, pre
 struct SubmissionResponse
 {
     std::string updateId;
-    std::uint32_t completionOffset;
+    node_int_t completionOffset;
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SubmissionResponse, updateId, completionOffset)
 
