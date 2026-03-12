@@ -132,6 +132,7 @@ target_link_libraries(daml-sdk
     spdlog::spdlog
     fmt::fmt
     cpr::cpr
+    intx::intx
 )
 
 add_library(daml-sdk::daml-sdk ALIAS daml-sdk)
