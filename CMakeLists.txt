@@ -84,6 +84,7 @@ target_compile_features(daml-sdk PUBLIC cxx_std_23)
 
 target_sources(daml-sdk
     PRIVATE
+      src/api/registry.impl.cpp
       src/crypto/sign.impl.cpp
       src/crypto/token.impl.cpp
       src/utils/ssl_connection.impl.cpp
