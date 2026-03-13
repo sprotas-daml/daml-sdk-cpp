@@ -144,6 +144,16 @@ std::vector<Update> get_updates_flats_by_template(str_ref_t token, int_t from, i
 {
     return get_updates_flats(token, from, to, template_ids, {}, {});
 }
+
+std::vector<Update> get_updates_flats_by_template_and_interface(str_ref_t token, int_t from, int_t to, vec_str_ref_t template_ids, vec_str_ref_t interface_ids)
+{
+    return get_updates_flats(token, from, to, template_ids, interface_ids, {});
+}
+
+std::vector<Update> get_updates_flats_by_template_and_interface_with_parties(str_ref_t token, int_t from, int_t to, vec_str_ref_t template_ids, vec_str_ref_t interface_ids, vec_str_ref_t parties)
+{
+    return get_updates_flats(token, from, to, template_ids, interface_ids, parties);
+}
 std::vector<Update> get_updates_flats_by_interface(str_ref_t token, int_t from, int_t to, vec_str_ref_t interface_ids)
 {
     return get_updates_flats(token, from, to, {}, interface_ids, {});

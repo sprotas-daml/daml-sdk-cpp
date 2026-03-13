@@ -36,7 +36,7 @@ struct ExercisedEvent
 {
     std::string contractId;
     std::string templateId;
-    std::string interfaceId;
+    std::optional<std::string> interfaceId;
     std::string choice;
     nlohmann::json choiceArgument;
     std::vector<std::string> actingParties;
