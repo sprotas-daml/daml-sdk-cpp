@@ -26,8 +26,10 @@ nlohmann::json post(const NodeConfig &config, std::string_view path, const std::
 
     std::string target_url = conn.target();
     spdlog::info("New POST request to {}", target_url);
+    
+    #ifdef SHOW_PAYLOAD
     spdlog::trace("Payload: {}", body.dump());
-
+    #endif
     cpr::Session &session = conn.getSession();
 
     session.SetHeader(cpr::Header{{"Accept", "application/json"},
@@ -47,7 +49,9 @@ nlohmann::json post(const NodeConfig &config, std::string_view path, const std::
         throw std::runtime_error(
             std::format("Post to {} failed with status {}: {}", target_url, response.status_code, response.text));
     }
+    #ifdef SHOW_PAYLOAD
     spdlog::trace("Response: {}", response.text);
+    #endif
 
     return nlohmann::json::parse(response.text);
 }

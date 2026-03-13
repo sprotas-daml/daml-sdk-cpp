@@ -173,6 +173,24 @@ struct Transfer
     std::vector<TransferOutput> outputs;
     std::optional<AppRewardBeneficiary> beneficiaries;
 };
+
 // data Transfer AmuletRules.daml
+
+// data HoldingView HoldingV1.daml
+struct InstrumentId
+{
+    std::string admin;
+    std::string id;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(InstrumentId, admin, id)
+
+struct HoldingView
+{
+    std::string owner;
+    decimal::decimal amount;
+    InstrumentId instrumentId;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(HoldingView, owner, amount, instrumentId)
+// data HoldingView HoldingV1.daml
 
 } // namespace daml::model::datatype

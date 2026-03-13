@@ -13,13 +13,20 @@ export namespace daml::model::response
 using json = nlohmann::json;
 using namespace daml::utils::json_literals;
 
+struct InterfaceView
+{
+    std::string interfaceId;
+    json viewValue;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(InterfaceView, interfaceId, viewValue)
+
 struct CreatedEvent
 {
     std::string contractId;
     std::string templateId;
     json createArgument;
     std::string createdEventBlob;
-    std::vector<json> interfaceViews;
+    std::vector<InterfaceView> interfaceViews;
     std::vector<std::string> witnessParties;
     std::vector<std::string> signatories;
     std::vector<std::string> observers;
