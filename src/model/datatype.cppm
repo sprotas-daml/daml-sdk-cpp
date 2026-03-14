@@ -177,6 +177,11 @@ struct Transfer
 // data Transfer AmuletRules.daml
 
 // data HoldingView HoldingV1.daml
+struct Lock { //TODO: add more info about Lock
+  std::vector<std::string> holders;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Lock, holders)
+
 struct InstrumentId
 {
     std::string admin;
@@ -189,8 +194,9 @@ struct HoldingView
     std::string owner;
     decimal::decimal amount;
     InstrumentId instrumentId;
+    std::optional<Lock> lock;
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(HoldingView, owner, amount, instrumentId)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(HoldingView, owner, amount, instrumentId, lock)
 // data HoldingView HoldingV1.daml
 
 } // namespace daml::model::datatype
