@@ -1,6 +1,9 @@
+
 module;
 
 #include <cpr/cpr.h>
+#include <cpr/curl_container.h>
+#include <cpr/parameters.h>
 #include <format>
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
@@ -18,6 +21,8 @@ using registry::Registry;
 
 using namespace daml::utils;
 
+using Params = std::vector<std::pair<std::string, std::string>>;
+
 nlohmann::json post(const NodeConfig &config, std::string_view path, const std::string &token,
                     const nlohmann::json &body)
 {
@@ -26,10 +31,10 @@ nlohmann::json post(const NodeConfig &config, std::string_view path, const std::
 
     std::string target_url = conn.target();
     spdlog::info("New POST request to {}", target_url);
-    
-    #ifdef SHOW_PAYLOAD
+
+#ifdef SHOW_PAYLOAD
     spdlog::trace("Payload: {}", body.dump());
-    #endif
+#endif
     cpr::Session &session = conn.getSession();
 
     session.SetHeader(cpr::Header{{"Accept", "application/json"},
@@ -49,14 +54,15 @@ nlohmann::json post(const NodeConfig &config, std::string_view path, const std::
         throw std::runtime_error(
             std::format("Post to {} failed with status {}: {}", target_url, response.status_code, response.text));
     }
-    #ifdef SHOW_PAYLOAD
+#ifdef SHOW_PAYLOAD
     spdlog::trace("Response: {}", response.text);
-    #endif
+#endif
 
     return nlohmann::json::parse(response.text);
 }
 
-nlohmann::json get(const NodeConfig &config, std::string_view path, const std::string &token)
+nlohmann::json get(const NodeConfig &config, std::string_view path, const std::string &token,
+                   const Params &parameters = {})
 {
     ssl_connection::SslConnection conn(config.url, config.timeout);
     conn / path;
@@ -66,8 +72,19 @@ nlohmann::json get(const NodeConfig &config, std::string_view path, const std::s
 
     cpr::Session &session = conn.getSession();
 
-    session.SetHeader(cpr::Header{{"Accept", "application/json"}, {"Authorization", std::format("Bearer {}", token)}});
+    if (!parameters.empty())
+    {
+        cpr::Parameters params;
 
+        for (const auto &[key, value] : parameters)
+        {
+            params.Add(cpr::Parameter{key, value});
+        }
+
+        session.SetParameters(params);
+    }
+
+    session.SetHeader(cpr::Header{{"Accept", "application/json"}, {"Authorization", std::format("Bearer {}", token)}});
     cpr::Response response = session.Get();
 
     if (response.error.code != cpr::ErrorCode::OK)
@@ -84,9 +101,10 @@ nlohmann::json get(const NodeConfig &config, std::string_view path, const std::s
     return nlohmann::json::parse(response.text);
 }
 
-nlohmann::json ledger_get(std::string_view path, const std::string &token)
+nlohmann::json ledger_get(std::string_view path, const std::string &token,
+                          const Params & params = {})
 {
-    return get(Registry::get_ledger(), path, token);
+    return get(Registry::get_ledger(), path, token, params);
 }
 nlohmann::json scan_get(std::string_view path)
 {

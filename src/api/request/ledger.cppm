@@ -11,6 +11,7 @@ import :client;
 
 import daml.utils;
 import daml.model;
+import daml.type;
 
 export namespace daml::api::request
 {
@@ -47,7 +48,7 @@ bool check_and_grant_rights(str_ref_t token, str_ref_t user_id)
         "userId"_j = user_id,
         "rights"_ja = {jo{"kind"_jo = {"CanReadAsAnyParty"_jo = {"value"_jo = {}}}}},
     };
-    
+
     client::ledger_post("v2/users/" + user_id + "/rights", token, new_rights);
     return true;
 }
@@ -145,12 +146,16 @@ std::vector<Update> get_updates_flats_by_template(str_ref_t token, int_t from, i
     return get_updates_flats(token, from, to, template_ids, {}, {});
 }
 
-std::vector<Update> get_updates_flats_by_template_and_interface(str_ref_t token, int_t from, int_t to, vec_str_ref_t template_ids, vec_str_ref_t interface_ids)
+std::vector<Update> get_updates_flats_by_template_and_interface(str_ref_t token, int_t from, int_t to,
+                                                                vec_str_ref_t template_ids, vec_str_ref_t interface_ids)
 {
     return get_updates_flats(token, from, to, template_ids, interface_ids, {});
 }
 
-std::vector<Update> get_updates_flats_by_template_and_interface_with_parties(str_ref_t token, int_t from, int_t to, vec_str_ref_t template_ids, vec_str_ref_t interface_ids, vec_str_ref_t parties)
+std::vector<Update> get_updates_flats_by_template_and_interface_with_parties(str_ref_t token, int_t from, int_t to,
+                                                                             vec_str_ref_t template_ids,
+                                                                             vec_str_ref_t interface_ids,
+                                                                             vec_str_ref_t parties)
 {
     return get_updates_flats(token, from, to, template_ids, interface_ids, parties);
 }
@@ -238,6 +243,18 @@ ContractEvents get_contract_by_id_with_parties(str_ref_t token, str_ref_t contra
 ContractEvents get_contract_by_id(str_ref_t token, str_ref_t contract_id)
 {
     return get_contract_by_id_with_parties(token, contract_id, {});
+}
+
+json get_parties(str_ref_t token, str_ref_t next_page_token = {}, node_int_t page_size = {})
+{
+  client::Params params;
+  if (!next_page_token.empty()) {
+    params.emplace_back("pageToken", next_page_token);
+  }
+  if (page_size != node_int_t{}) {
+    params.emplace_back("pageSize", std::to_string(page_size));
+  }
+  return client::ledger_get("v2/parties", token, params);
 }
 
 }; // namespace daml::api::request
