@@ -59,12 +59,12 @@ class TokenManager
 
         if (std::chrono::system_clock::now() < last_lazy_update + 1min)
         {
-            spdlog::info("[TokenManager] Skip token update: Too much token updates (max is one per minute)");
+            spdlog::debug("[TokenManager] Skip token update: Too much token updates (max is one per minute)");
             return;
         }
         if (!m_token_data.m_token.empty() and std::chrono::system_clock::now() + 30s < getExpiresAt())
         {
-            spdlog::info("[TokenManager::update_lazy()] Skip token update: Token is still valid");
+            spdlog::debug("[TokenManager::update_lazy()] Skip token update: Token is still valid");
             return;
         }
 

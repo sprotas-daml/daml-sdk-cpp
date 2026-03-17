@@ -30,7 +30,7 @@ nlohmann::json post(const NodeConfig &config, std::string_view path, const std::
     conn / path;
 
     std::string target_url = conn.target();
-    spdlog::info("New POST request to {}", target_url);
+    spdlog::debug("POST request to {}", target_url);
 
 #ifdef SHOW_PAYLOAD
     spdlog::trace("Payload: {}", body.dump());
@@ -68,7 +68,7 @@ nlohmann::json get(const NodeConfig &config, std::string_view path, const std::s
     conn / path;
 
     std::string target_url = conn.target();
-    spdlog::info("New GET request to {}", target_url);
+    spdlog::debug("GET request to {}", target_url);
 
     cpr::Session &session = conn.getSession();
 
