@@ -29,6 +29,7 @@ class TokenManager
         std::string client_secret;
         std::string audience;
         std::string key;
+        std::string token;
     };
     explicit TokenManager(Secrets &&secrets)
         : m_secrets(std::move(secrets)), last_lazy_update(std::chrono::system_clock::now() - 1h)

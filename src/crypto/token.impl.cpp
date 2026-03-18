@@ -62,6 +62,11 @@ std::string base64urlDecode(const std::string &input)
 
 void TokenManager::load_token()
 {
+    if (!m_secrets.token.empty()) {
+      m_token_data.m_token = m_secrets.token;
+      m_token_data.decoded_json = decode_jwt_payload(m_token_data.m_token);
+      return;
+    }
     spdlog::info("[TokenManager] loadToken from server, MUST NOT BE EXECUTED OFTEN");
 
     ssl_connection::SslConnection connection(m_secrets.base_url, m_timeout);
