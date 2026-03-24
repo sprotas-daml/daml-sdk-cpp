@@ -144,4 +144,14 @@ std::vector<Round> get_active_issuing_rounds()
     return get_active_open_and_issuing_rounds().issuing_rounds;
 }
 
+TransferFactoryResponse get_transfer_factory(const transfer_instruction_v1::TransferFactory_Transfer &transfer)
+{
+    const TransferFactoryRequest payload = {
+        .choiceArguments = transfer,
+        .excludeDebugFields = true,
+    };
+    
+    return client::scan_post("registry/transfer-instruction/v1/transfer-factory", payload);
+};
+
 }; // namespace daml::api::request

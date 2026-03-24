@@ -7,11 +7,13 @@ export module daml.model:response;
 
 import daml.type;
 import daml.utils;
+import :datatype;
 
 export namespace daml::model::response
 {
 using json = nlohmann::json;
 using namespace daml::utils::json_literals;
+using namespace daml::model::datatype;
 
 struct InterfaceView
 {
@@ -188,5 +190,20 @@ struct SubmissionResponse
     node_int_t completionOffset;
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SubmissionResponse, updateId, completionOffset)
+
+struct ChoiceContext
+{
+    metadata_v1::ChoiceContext choiceContext;
+    std::vector<DisclosedContract> disclosedContracts;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ChoiceContext, choiceContext, disclosedContracts)
+
+struct TransferFactoryResponse
+{
+    std::string factoryId;
+    std::string transferKind;
+    ChoiceContext choiceContext;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TransferFactoryResponse, factoryId, transferKind, choiceContext)
 
 } // namespace daml::model::response

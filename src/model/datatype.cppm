@@ -1,11 +1,11 @@
 module;
 
+#include <cstdint>
 #include <nlohmann/detail/macro_scope.hpp>
 #include <nlohmann/json.hpp>
-
-#include <cstdint>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <variant>
 #include <vector>
 
@@ -24,6 +24,7 @@ struct DisclosedContract
     std::string createdEventBlob;
     std::string synchronizerId;
 };
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DisclosedContract, templateId, contractId, createdEventBlob, synchronizerId)
 
 struct Round : public DisclosedContract
 {
@@ -177,8 +178,9 @@ struct Transfer
 // data Transfer AmuletRules.daml
 
 // data HoldingView HoldingV1.daml
-struct Lock { //TODO: add more info about Lock
-  std::vector<std::string> holders;
+struct Lock
+{ // TODO: add more info about Lock
+    std::vector<std::string> holders;
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Lock, holders)
 
@@ -199,4 +201,106 @@ struct HoldingView
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(HoldingView, owner, amount, instrumentId, lock)
 // data HoldingView HoldingV1.daml
 
+namespace metadata_v1
+{
+struct AnyValue
+{
+    std::string tag;
+    json value;
+
+    static AnyValue Text(const std::string &t)
+    {
+        return {"AV_Text", t};
+    }
+    static AnyValue Int(int64_t i)
+    {
+        return {"AV_Int", i};
+    }
+    static AnyValue Decimal(const std::string &d)
+    {
+        return {"AV_Decimal", d};
+    }
+    static AnyValue Bool(bool b)
+    {
+        return {"AV_Bool", b};
+    }
+    static AnyValue Party(const std::string &p)
+    {
+        return {"AV_Party", p};
+    }
+    static AnyValue ContractId(const std::string &cid)
+    {
+        return {"AV_ContractId", cid};
+    }
+
+    static AnyValue List(const std::vector<AnyValue> &l);
+    static AnyValue Map(const std::unordered_map<std::string, AnyValue> &m);
+};
+
+inline void to_json(json &j, const AnyValue &av)
+{
+    j = json{{"tag", av.tag}, {"value", av.value}};
+}
+
+inline void from_json(const json &j, AnyValue &av)
+{
+    j.at("tag").get_to(av.tag);
+    j.at("value").get_to(av.value);
+}
+
+inline AnyValue AnyValue::List(const std::vector<AnyValue> &l)
+{
+    return {"AV_List", l};
+}
+
+inline AnyValue AnyValue::Map(const std::unordered_map<std::string, AnyValue> &m)
+{
+    return {"AV_Map", m};
+}
+
+struct ChoiceContext
+{
+    std::unordered_map<std::string, AnyValue> values;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ChoiceContext, values)
+
+struct Metadata
+{
+    std::unordered_map<std::string, std::string> values;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Metadata, values)
+struct ExtraArgs
+{
+    ChoiceContext context;
+    Metadata meta;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExtraArgs, context, meta)
+} // namespace metadata_v1
+
+namespace transfer_instruction_v1
+{
+
+struct Transfer
+{
+    std::string sender;
+    std::string receiver;
+    decimal::decimal amount;
+    InstrumentId instrumentId;
+    std::string requestedAt;
+    std::string executeBefore;
+    std::vector<std::string> inputHoldingCids;
+    metadata_v1::Metadata meta;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Transfer, sender, receiver, amount, instrumentId, requestedAt,
+                                                executeBefore, inputHoldingCids, meta)
+
+struct TransferFactory_Transfer
+{
+    std::string expectedAdmin;
+    Transfer transfer;
+    metadata_v1::ExtraArgs extraArgs;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(TransferFactory_Transfer, expectedAdmin, transfer, extraArgs)
+} // namespace transfer_instruction_v1
 } // namespace daml::model::datatype
