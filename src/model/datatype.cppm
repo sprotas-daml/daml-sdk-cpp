@@ -58,11 +58,19 @@ struct TransferContext
     std::vector<ValidatorRight> validatorRights;
     std::optional<std::string> featuredAppRight;
 };
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(TransferContext, openMiningRound, issuingMiningRounds, validatorRights, featuredAppRight)
 
 struct PaymentTransferContext
 {
     std::string amuletRules;
     TransferContext context;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(PaymentTransferContext, amuletRules, context)
+
+template <typename T>
+struct Prepared {
+  T data;
+  std::vector<DisclosedContract> disclosed;
 };
 
 struct AppRewardBeneficiary

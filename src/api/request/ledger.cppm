@@ -182,7 +182,7 @@ std::vector<ActiveContract> get_active_contract_set(str_ref_t token, int_t offse
     req.verbose = false;
     req.filter = get_filters(parties, template_ids, interface_ids);
 
-    return client::ledger_post("v2/state/active-contracts", token, req);
+    return client::ledger_post("v2/state/active-contracts", token, req, {{"limit", "200"}});
 }
 
 std::vector<ActiveContract> get_active_contract_set_by_template(str_ref_t token, int_t offset,
@@ -247,14 +247,29 @@ ContractEvents get_contract_by_id(str_ref_t token, str_ref_t contract_id)
 
 json get_parties(str_ref_t token, str_ref_t next_page_token = {}, node_int_t page_size = {})
 {
-  client::Params params;
-  if (!next_page_token.empty()) {
-    params.emplace_back("pageToken", next_page_token);
-  }
-  if (page_size != node_int_t{}) {
-    params.emplace_back("pageSize", std::to_string(page_size));
-  }
-  return client::ledger_get("v2/parties", token, params);
+    client::Params params;
+    if (!next_page_token.empty())
+    {
+        params.emplace_back("pageToken", next_page_token);
+    }
+    if (page_size != node_int_t{})
+    {
+        params.emplace_back("pageSize", std::to_string(page_size));
+    }
+    return client::ledger_get("v2/parties", token, params);
+}
+
+std::string get_global_sync(str_ref_t token)
+{
+    auto synchronizers = client::ledger_get("v2/state/connected-synchronizers", token)
+                             .at("connectedSynchronizers")
+                             .get<std::vector<json>>();
+    for (const auto &sync : synchronizers) {
+      if (sync.value("synchronizerAlias", "") == "global") {
+        return sync.value("synchronizerId", "");
+      }
+    }
+    return {};
 }
 
 }; // namespace daml::api::request

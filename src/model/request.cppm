@@ -85,7 +85,8 @@ struct BaseSubmit
     std::vector<datatype::DisclosedContract> disclosedContracts;
     std::vector<CommandWrapper> commands;
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(BaseSubmit, commandId)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(BaseSubmit, commandId, userId, readAs, actAs, synchronizerId,
+                                                packageIdSelectionPreference, disclosedContracts, commands)
 
 // Submitting
 struct SubmitTransaction : public BaseSubmit

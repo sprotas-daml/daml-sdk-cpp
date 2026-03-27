@@ -175,14 +175,23 @@ struct ContractEvents
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ContractEvents, created, archived)
 
+struct CostEstimation
+{
+  node_int_t confirmationRequestTrafficCostEstimation;
+  node_int_t confirmationResponseTrafficCostEstimation;
+  node_int_t totalTrafficCostEstimation;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(CostEstimation, confirmationRequestTrafficCostEstimation, confirmationResponseTrafficCostEstimation, totalTrafficCostEstimation)
+
 struct PreparedTransactionResponse
 {
     std::string preparedTransaction;
     std::string preparedTransactionHash;
     std::string hashingSchemeVersion;
+    CostEstimation costEstimation;
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(PreparedTransactionResponse, preparedTransaction,
-                                                preparedTransactionHash, hashingSchemeVersion)
+  preparedTransactionHash, hashingSchemeVersion, costEstimation)
 
 struct SubmissionResponse
 {
@@ -193,10 +202,10 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SubmissionResponse, updateId, co
 
 struct ChoiceContext
 {
-    metadata_v1::ChoiceContext choiceContext;
+    metadata_v1::ChoiceContext choiceContextData;
     std::vector<DisclosedContract> disclosedContracts;
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ChoiceContext, choiceContext, disclosedContracts)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ChoiceContext, choiceContextData, disclosedContracts)
 
 struct TransferFactoryResponse
 {

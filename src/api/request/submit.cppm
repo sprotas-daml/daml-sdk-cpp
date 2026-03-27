@@ -1,6 +1,8 @@
 module;
 
 #include <nlohmann/json.hpp>
+#include <nlohmann/detail/macro_scope.hpp>
+#include <spdlog/spdlog.h>
 
 export module daml.api:submit;
 
@@ -24,13 +26,14 @@ using vec_str_ref_t = const std::vector<std::string> &;
 
 struct TransactionPayload
 {
-    str_ref_t user_id;
-    vec_str_ref_t read_as;
-    vec_str_ref_t act_as;
-    str_ref_t synchronizer_id;
+    std::string user_id;
+    std::vector<std::string> read_as;
+    std::vector<std::string> act_as;
+    std::string synchronizer_id;
     std::vector<DisclosedContract> disclosed_contracts;
     std::vector<CommandWrapper> commands;
 };
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(TransactionPayload, user_id, read_as, act_as, synchronizer_id, disclosed_contracts, commands)
 
 PreparedTransactionResponse prepare_transaction(str_ref_t token, const TransactionPayload &payload)
 {
@@ -60,6 +63,8 @@ SubmissionResponse send_transaction(str_ref_t token, const TransactionPayload &p
     req.packageIdSelectionPreference = {};
     req.disclosedContracts = payload.disclosed_contracts;
     req.commands = payload.commands;
+    
+    spdlog::info(nlohmann::json(req).dump(2));
 
     return client::ledger_post("v2/commands/submit-and-wait", token, req);
 }

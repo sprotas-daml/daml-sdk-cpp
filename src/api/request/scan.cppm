@@ -22,10 +22,10 @@ using namespace daml::model::datatype;
 using namespace daml::model::request;
 using namespace daml::model::response;
 
-DisclosedContract get_amulet_rules(str_ref_t token)
+DisclosedContract get_amulet_rules()
 {
     const nlohmann::json payload = {{"cached_amulet_rules_contract_id", ""}, {"cached_amulet_rules_domain_id", ""}};
-    auto j = client::scan_post("v0/amulet-rules", payload);
+    auto j = client::scan_post("api/scan/v0/amulet-rules", payload);
     auto contract = j.at("amulet_rules_update").at("contract");
     auto sync = j.at("amulet_rules_update").at("domain_id");
 
@@ -43,7 +43,7 @@ DisclosedContract get_external_party_amulet_rules()
         "cached_external_party_amulet_rules_contract_id"_j = "",
         "cached_external_party_amulet_rules_domain_id"_j = "",
     };
-    auto j = client::scan_post("v0/external-party-amulet-rules", payload);
+    auto j = client::scan_post("api/scan/v0/external-party-amulet-rules", payload);
     auto contract = j.at("amulet_rules_update").at("contract");
     auto sync = j.at("amulet_rules_update").at("domain_id");
 
@@ -57,7 +57,7 @@ DisclosedContract get_external_party_amulet_rules()
 
 OpenAndIssuingRounds get_open_and_issuing_rounds()
 {
-    const std::string endpoint = "v0/open-and-issuing-mining-rounds";
+    const std::string endpoint = "api/scan/v0/open-and-issuing-mining-rounds";
     const nlohmann::json payload = {{"cached_open_mining_round_contract_ids", nlohmann::json::array()},
                                     {"cached_issuing_round_contract_ids", nlohmann::json::array()}};
     auto response = client::scan_post(endpoint, payload);
@@ -74,8 +74,8 @@ OpenAndIssuingRounds get_open_and_issuing_rounds()
 
         Round round;
         round.templateId = contract.at("template_id").get<std::string>();
-        round.contractId = contract.at("contractId").get<std::string>();
-        round.createdEventBlob = contract.at("createdEventBlob").get<std::string>();
+        round.contractId = contract.at("contract_id").get<std::string>();
+        round.createdEventBlob = contract.at("created_event_blob").get<std::string>();
         round.synchronizerId = value.at("domain_id").get<std::string>();
         round.round_number = std::stoi(contract.at("payload").at("round").at("number").get<std::string>());
         round.opens_at = utils::time::parse_utc_iso8601(opens_at);
@@ -93,8 +93,8 @@ OpenAndIssuingRounds get_open_and_issuing_rounds()
 
         Round round;
         round.templateId = contract.at("template_id").get<std::string>();
-        round.contractId = contract.at("contractId").get<std::string>();
-        round.createdEventBlob = contract.at("createdEventBlob").get<std::string>();
+        round.contractId = contract.at("contract_id").get<std::string>();
+        round.createdEventBlob = contract.at("created_event_blob").get<std::string>();
         round.synchronizerId = value.at("domain_id").get<std::string>();
         round.round_number = std::stoi(contract.at("payload").at("round").at("number").get<std::string>());
         round.opens_at = utils::time::parse_utc_iso8601(opens_at);

@@ -71,6 +71,7 @@ message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "C++ Compiler Version: ${CMAKE_CXX_COMPILER_VERSION}")
 message(STATUS "C++ Compiler ID: ${CMAKE_CXX_COMPILER_ID}")
 
+option(ENABLE_PAYLOAD_LOG "Enable payload tracing" OFF)
 
 find_package(OpenSSL REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
@@ -81,6 +82,12 @@ find_package(cpr CONFIG REQUIRED)
 
 add_library(daml-sdk STATIC)
 target_compile_features(daml-sdk PUBLIC cxx_std_23)
+
+target_compile_definitions(daml-sdk PRIVATE
+  "$<$<CONFIG:Debug>:SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE>"
+  "$<$<NOT:$<CONFIG:Debug>>:SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO>"
+  "$<$<BOOL:${ENABLE_PAYLOAD_LOG}>:SHOW_PAYLOAD>"
+)
 
 target_sources(daml-sdk
     PRIVATE
@@ -96,6 +103,7 @@ target_sources(daml-sdk
             src/api/request/ledger.cppm
             src/api/request/scan.cppm
             src/api/request/submit.cppm
+            src/api/request/utils.cppm
             
             src/crypto/sign.cppm
             src/crypto/token.cppm
@@ -103,6 +111,7 @@ target_sources(daml-sdk
             src/model/datatype.cppm
             src/model/request.cppm
             src/model/response.cppm
+            src/model/choice.cppm
      
             src/type/decimal.cppm
             

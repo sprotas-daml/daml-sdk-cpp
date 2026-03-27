@@ -24,7 +24,7 @@ using namespace daml::utils;
 using Params = std::vector<std::pair<std::string, std::string>>;
 
 nlohmann::json post(const NodeConfig &config, std::string_view path, const std::string &token,
-                    const nlohmann::json &body)
+                    const nlohmann::json &body, const Params &parameters = {})
 {
     ssl_connection::SslConnection conn(config.url, config.timeout);
     conn / path;
@@ -33,9 +33,21 @@ nlohmann::json post(const NodeConfig &config, std::string_view path, const std::
     spdlog::debug("POST request to {}", target_url);
 
 #ifdef SHOW_PAYLOAD
-    spdlog::trace("Payload: {}", body.dump());
+    spdlog::trace("Payload: {}", body.dump(2));
 #endif
     cpr::Session &session = conn.getSession();
+
+    if (!parameters.empty())
+    {
+        cpr::Parameters params;
+
+        for (const auto &[key, value] : parameters)
+        {
+            params.Add(cpr::Parameter{key, value});
+        }
+
+        session.SetParameters(params);
+    }
 
     session.SetHeader(cpr::Header{{"Accept", "application/json"},
                                   {"Content-Type", "application/json"},
@@ -91,6 +103,8 @@ nlohmann::json get(const NodeConfig &config, std::string_view path, const std::s
     {
         throw std::runtime_error(std::format("GET transport error to {}: {}", target_url, response.error.message));
     }
+    
+    spdlog::debug("Response: {}", response.text);
 
     if (response.status_code != 200)
     {
@@ -101,8 +115,7 @@ nlohmann::json get(const NodeConfig &config, std::string_view path, const std::s
     return nlohmann::json::parse(response.text);
 }
 
-nlohmann::json ledger_get(std::string_view path, const std::string &token,
-                          const Params & params = {})
+nlohmann::json ledger_get(std::string_view path, const std::string &token, const Params &params = {})
 {
     return get(Registry::get_ledger(), path, token, params);
 }
@@ -110,9 +123,9 @@ nlohmann::json scan_get(std::string_view path)
 {
     return get(Registry::get_scan(), path, "");
 }
-nlohmann::json ledger_post(std::string_view path, const std::string &token, const nlohmann::json &body)
+nlohmann::json ledger_post(std::string_view path, const std::string &token, const nlohmann::json &body, const Params &params = {})
 {
-    return post(Registry::get_ledger(), path, token, body);
+    return post(Registry::get_ledger(), path, token, body, params);
 }
 nlohmann::json scan_post(std::string_view path, const nlohmann::json &body)
 {
