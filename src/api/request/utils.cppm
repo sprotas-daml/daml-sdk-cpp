@@ -46,16 +46,23 @@ std::optional<DisclosedContract> get_featured_app_right_cid_for_provider(str_ref
     };
 }
 
-Prepared<PaymentTransferContext> get_payment_transfer_context(str_ref_t token, str_ref_t provider_party)
+Prepared<PaymentTransferContext> get_payment_transfer_context(str_ref_t token = {}, str_ref_t provider_party = {})
 {
     TransferContext tf_ctx;
     std::vector<DisclosedContract> disclosed_contracts;
 
-    auto featured_app_right = get_featured_app_right_cid_for_provider(token, provider_party);
-    if (featured_app_right.has_value())
+    if (token.empty() || provider_party.empty())
     {
-        tf_ctx.featuredAppRight = featured_app_right.value().contractId;
-        disclosed_contracts.emplace_back(std::move(featured_app_right.value()));
+        tf_ctx.featuredAppRight = std::nullopt;
+    }
+    else
+    {
+        auto featured_app_right = get_featured_app_right_cid_for_provider(token, provider_party);
+        if (featured_app_right.has_value())
+        {
+            tf_ctx.featuredAppRight = featured_app_right.value().contractId;
+            disclosed_contracts.emplace_back(std::move(featured_app_right.value()));
+        }
     }
 
     auto open_and_issuing_mining_rounds = get_active_open_and_issuing_rounds();
