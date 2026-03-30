@@ -21,6 +21,26 @@ using registry::Registry;
 
 using namespace daml::utils;
 
+class daml_network_error : public std::runtime_error { // TODO: move to separate module and namespace
+private:
+    long m_status;
+    std::string m_body;
+
+public:
+    daml_network_error(const std::string& message, int status, std::string body)
+        : std::runtime_error(message), 
+          m_status(status), 
+          m_body(std::move(body)) {}
+
+    [[nodiscard]] long status() const noexcept {
+        return m_status;
+    }
+
+    [[nodiscard]] const std::string& body() const noexcept {
+        return m_body;
+    }
+};
+
 using Params = std::vector<std::pair<std::string, std::string>>;
 
 nlohmann::json post(const NodeConfig &config, std::string_view path, const std::string &token,
@@ -63,8 +83,8 @@ nlohmann::json post(const NodeConfig &config, std::string_view path, const std::
 
     if (response.status_code < 200 || response.status_code >= 300)
     {
-        throw std::runtime_error(
-            std::format("Post to {} failed with status {}: {}", target_url, response.status_code, response.text));
+        throw daml_network_error(
+            std::format("Post to {} failed with status {}: {}", target_url, response.status_code, response.text), response.status_code, response.text);
     }
 #ifdef SHOW_PAYLOAD
     spdlog::trace("Response: {}", response.text);

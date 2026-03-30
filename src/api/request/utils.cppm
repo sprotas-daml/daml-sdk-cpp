@@ -107,10 +107,40 @@ Prepared<PaymentTransferContext> get_payment_transfer_context(str_ref_t token = 
     };
 }
 
-std::vector<ActiveContract> get_party_amulet_cids(str_ref_t token, str_ref_t party)
+std::vector<ActiveContract> get_party_amulets(str_ref_t token, str_ref_t party)
 {
     return request::get_active_contract_set_by_template_with_parties(token, request::get_ledger_end(token),
                                                                      {"#splice-amulet:Splice.Amulet:Amulet"}, {party});
+}
+
+std::vector<std::string> get_party_amulet_cids(str_ref_t token, str_ref_t party)
+{
+    auto amulets = get_party_amulets(token, party);
+    std::vector<std::string> cids;
+    cids.reserve(amulets.size());
+    for (auto &amulet : amulets)
+    {
+        cids.push_back(std::move(amulet.createdEvent.contractId));
+    }
+    return cids;
+}
+
+std::vector<DisclosedContract> get_party_amulet_disclosed(str_ref_t token, str_ref_t party)
+{
+    auto amulets = get_party_amulets(token, party);
+    std::vector<DisclosedContract> discls;
+    discls.reserve(amulets.size());
+
+    for (auto &amulet : amulets)
+    {
+        discls.push_back(DisclosedContract{
+            .templateId = amulet.createdEvent.templateId,
+            .contractId = amulet.createdEvent.contractId,
+            .createdEventBlob = amulet.createdEvent.createdEventBlob,
+            .synchronizerId = amulet.synchronizerId,
+        });
+    }
+    return discls;
 }
 
 void create_transfer_preapproval_for_user(str_ref_t token, str_ref_t user_id, str_ref_t user_party,
@@ -120,7 +150,7 @@ void create_transfer_preapproval_for_user(str_ref_t token, str_ref_t user_id, st
     auto disclosed_contracts = std::move(pay_tf_ctx_prepared.disclosed);
     auto pay_tf_ctx = std::move(pay_tf_ctx_prepared.data); // 1. context
 
-    auto amulets = get_party_amulet_cids(token, provider_party);
+    auto amulets = get_party_amulets(token, provider_party);
     std::vector<TransferInput> transfer_inputs; // 2. inputs
     transfer_inputs.reserve(amulets.size());
 

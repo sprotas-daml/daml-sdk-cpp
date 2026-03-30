@@ -64,8 +64,6 @@ SubmissionResponse send_transaction(str_ref_t token, const TransactionPayload &p
     req.disclosedContracts = payload.disclosed_contracts;
     req.commands = payload.commands;
     
-    spdlog::info(nlohmann::json(req).dump(2));
-
     return client::ledger_post("v2/commands/submit-and-wait", token, req);
 }
 
