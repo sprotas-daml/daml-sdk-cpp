@@ -172,5 +172,29 @@ class decimal
     }
 
     auto operator<=>(const decimal &other) const = default;
+
+    decimal &operator+=(const decimal &other)
+    {
+        *this = *this + other;
+        return *this;
+    }
+
+    decimal &operator-=(const decimal &other)
+    {
+        *this = *this - other;
+        return *this;
+    }
+
+    decimal &operator*=(const decimal &other)
+    {
+        *this = *this * other;
+        return *this;
+    }
+
+    decimal &operator/=(const decimal &other)
+    {
+        *this = *this / other;
+        return *this;
+    }
 };
 } // namespace daml::decimal

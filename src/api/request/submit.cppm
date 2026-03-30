@@ -89,7 +89,7 @@ Signature build_ed25519_sig_for_party(str_ref_t party, str_ref_t private_key, st
     return {.party = party, .signatures = {party_sig}};
 }
 
-SubmissionResponse send_signed_transaction_one_party(str_ref_t token, str_ref_t user_id, str_ref_t party,
+SubmissionResponse send_signed_transaction_one_party(str_ref_t token, str_ref_t party,
                                                      str_ref_t private_key, const TransactionPayload &payload)
 {
     auto response = prepare_transaction(token, payload);
@@ -98,7 +98,7 @@ SubmissionResponse send_signed_transaction_one_party(str_ref_t token, str_ref_t 
         .signatures = {build_ed25519_sig_for_party(party, private_key, response.preparedTransactionHash)}};
 
     SubmitSignedTransaction req = {
-        .userId = user_id,
+        .userId = payload.user_id,
         .submissionId = uuid::uuid_v4(),
         .hashingSchemeVersion = response.hashingSchemeVersion,
         .preparedTransaction = response.preparedTransaction,

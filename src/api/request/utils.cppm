@@ -98,6 +98,7 @@ Prepared<PaymentTransferContext> get_payment_transfer_context(str_ref_t token = 
 
     auto amulet_rules = get_amulet_rules();
     pay_tf_ctx.amuletRules = amulet_rules.contractId;
+    pay_tf_ctx.amulet_rules_template_id = amulet_rules.templateId;
     disclosed_contracts.emplace_back(std::move(amulet_rules));
 
     return {

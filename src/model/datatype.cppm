@@ -58,19 +58,21 @@ struct TransferContext
     std::vector<ValidatorRight> validatorRights;
     std::optional<std::string> featuredAppRight;
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(TransferContext, openMiningRound, issuingMiningRounds, validatorRights, featuredAppRight)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(TransferContext, openMiningRound, issuingMiningRounds, validatorRights,
+                                                featuredAppRight)
 
 struct PaymentTransferContext
 {
     std::string amuletRules;
+    std::string amulet_rules_template_id;
     TransferContext context;
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(PaymentTransferContext, amuletRules, context)
 
-template <typename T>
-struct Prepared {
-  T data;
-  std::vector<DisclosedContract> disclosed;
+template <typename T> struct Prepared
+{
+    T data;
+    std::vector<DisclosedContract> disclosed;
 };
 
 struct AppRewardBeneficiary
@@ -78,6 +80,7 @@ struct AppRewardBeneficiary
     std::string beneficiary;
     decimal::decimal weight;
 };
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(AppRewardBeneficiary, beneficiary, weight)
 
 // data TransferOutput AmuletRules.daml
 struct TransferOutput
@@ -87,6 +90,7 @@ struct TransferOutput
     decimal::decimal amount;
     std::optional<json> lock; // TODO: complete type
 };
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(TransferOutput, receiver, receiverFeeRatio, amount, lock)
 // data TransferOutput AmuletRules.daml
 
 // data TransferInput AmuletRules.daml
@@ -182,6 +186,7 @@ struct Transfer
     std::vector<TransferOutput> outputs;
     std::optional<AppRewardBeneficiary> beneficiaries;
 };
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Transfer, sender, provider, inputs, outputs, beneficiaries)
 
 // data Transfer AmuletRules.daml
 
