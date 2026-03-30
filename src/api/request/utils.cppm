@@ -68,12 +68,12 @@ Prepared<PaymentTransferContext> get_payment_transfer_context(str_ref_t token = 
     auto open_and_issuing_mining_rounds = get_active_open_and_issuing_rounds();
     DisclosedContract open_mining_round;
     node_int_t max_round_number = 0;
-    for (const auto &round : open_and_issuing_mining_rounds.open_rounds)
+    for (auto &round : open_and_issuing_mining_rounds.open_rounds)
     {
         if (round.round_number > max_round_number)
         {
             max_round_number = round.round_number;
-            open_mining_round = round;
+            open_mining_round = static_cast<DisclosedContract &&>(round);
         }
     }
     tf_ctx.openMiningRound = open_mining_round.contractId;
