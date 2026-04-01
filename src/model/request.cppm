@@ -130,7 +130,7 @@ struct SubmitSignedTransaction
     std::string submissionId;
     std::string hashingSchemeVersion = "HASHING_SCHEME_VERSION_V2";
     std::string preparedTransaction;
-    json deduplicationPeriod = {{"Empty", {}}};
+    json deduplicationPeriod = {{"Empty", nlohmann::json::object_t{}}};
     PartySignatures partySignatures;
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SubmitSignedTransaction, userId, submissionId, hashingSchemeVersion,
