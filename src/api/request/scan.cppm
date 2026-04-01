@@ -55,6 +55,22 @@ DisclosedContract get_external_party_amulet_rules()
     };
 }
 
+DisclosedContract get_ans_rules() {
+  const nlohmann::json payload = jo{
+      "cached_ans_rules_contract_id"_j = "",
+      "cached_ans_rules_domain_id"_j = "",
+  };
+  auto j = client::scan_post("api/scan/v0/ans-rules", payload);
+  auto contract = j.at("ans_rules_update").at("contract");
+  auto sync = j.at("ans_rules_update").at("domain_id");
+
+  return DisclosedContract{
+      .templateId = contract.at("template_id"),
+      .contractId = contract.at("contract_id"),
+      .createdEventBlob = contract.at("created_event_blob"),
+      .synchronizerId = sync,
+  };
+}
 OpenAndIssuingRounds get_open_and_issuing_rounds()
 {
     const std::string endpoint = "api/scan/v0/open-and-issuing-mining-rounds";
