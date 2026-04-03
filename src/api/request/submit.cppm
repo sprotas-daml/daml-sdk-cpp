@@ -67,6 +67,10 @@ SubmissionResponse send_transaction(str_ref_t token, const TransactionPayload &p
     return client::ledger_post("v2/commands/submit-and-wait", token, req);
 }
 
+auto send_transaction_and_wait_for_transaction_tree(str_ref_t token, const TransactionPayload &payload) {
+  
+}
+
 Signature build_ed25519_sig_for_party(str_ref_t party, str_ref_t private_key, str_ref_t hash)
 {
     auto get_party_hash = [](const std::string &party) {
