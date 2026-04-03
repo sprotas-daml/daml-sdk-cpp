@@ -85,10 +85,10 @@ SubmitTransactionAndWaitTreeResponse send_transaction_and_wait_for_transaction_t
     req_commands.commands = payload.commands;
 
     const auto tx = SubmitAndWaitTreeTransaction{
-        .commmands = std::move(req_commands),
+        .commands = std::move(req_commands),
         .transactionFormat =
             {
-                .transactionShape = "TRANSACTION_SHAPE_ACS_DELTA",
+                .transactionShape = "TRANSACTION_SHAPE_LEDGER_EFFECTS",
                 .eventFormat = get_event_format(parties, template_ids, interface_ids, verbose),
             },
     };

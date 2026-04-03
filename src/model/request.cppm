@@ -182,10 +182,10 @@ struct UpdateFormat
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(UpdateFormat, includeTransactions)
 
 struct SubmitAndWaitTreeTransaction {
-  SubmitTransaction commmands;
+  SubmitTransaction commands;
   IncludeTransactions transactionFormat;
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SubmitAndWaitTreeTransaction, commmands, transactionFormat)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SubmitAndWaitTreeTransaction, commands, transactionFormat)
 
 struct UpdateByIdRequest
 {
