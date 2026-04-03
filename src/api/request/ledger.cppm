@@ -186,12 +186,12 @@ std::vector<ActiveContract> get_active_contract_set(str_ref_t token, int_t offse
 }
 
 std::vector<ActiveContract> get_active_contract_set_by_template(str_ref_t token, int_t offset,
-                                                                std::vector<std::string> &template_ids)
+                                                                vec_str_ref_t template_ids)
 {
     return get_active_contract_set(token, offset, template_ids, {}, {});
 }
 std::vector<ActiveContract> get_active_contract_set_by_interface(str_ref_t token, int_t offset,
-                                                                 std::vector<std::string> &interface_ids)
+                                                                 vec_str_ref_t interface_ids)
 {
     return get_active_contract_set(token, offset, {}, interface_ids, {});
 }
