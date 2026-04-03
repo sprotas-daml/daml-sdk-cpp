@@ -135,7 +135,9 @@ std::vector<Update> get_updates_flats(str_ref_t token, int_t from, int_t to, vec
                                       vec_str_ref_t interface_ids, vec_str_ref_t parties)
 {
     FlatUpdatesRequest req;
-    req.beginExclusive = from, req.endInclusive = to, req.verbose = false,
+    req.beginExclusive = from;
+    req.endInclusive = to;
+    req.verbose = false;
     req.filter = get_filters(parties, template_ids, interface_ids);
 
     return client::ledger_post("v2/updates/flats", token, req);
@@ -264,10 +266,12 @@ std::string get_global_sync(str_ref_t token)
     auto synchronizers = client::ledger_get("v2/state/connected-synchronizers", token)
                              .at("connectedSynchronizers")
                              .get<std::vector<json>>();
-    for (const auto &sync : synchronizers) {
-      if (sync.value("synchronizerAlias", "") == "global") {
-        return sync.value("synchronizerId", "");
-      }
+    for (const auto &sync : synchronizers)
+    {
+        if (sync.value("synchronizerAlias", "") == "global")
+        {
+            return sync.value("synchronizerId", "");
+        }
     }
     return {};
 }

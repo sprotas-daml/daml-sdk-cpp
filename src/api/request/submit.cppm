@@ -1,7 +1,7 @@
 module;
 
-#include <nlohmann/json.hpp>
 #include <nlohmann/detail/macro_scope.hpp>
+#include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
 export module daml.api:submit;
@@ -11,6 +11,7 @@ import daml.utils;
 import daml.crypto;
 
 import :client;
+import :ledger;
 
 export namespace daml::api::request
 {
@@ -33,7 +34,8 @@ struct TransactionPayload
     std::vector<DisclosedContract> disclosed_contracts;
     std::vector<CommandWrapper> commands;
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(TransactionPayload, user_id, read_as, act_as, synchronizer_id, disclosed_contracts, commands)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(TransactionPayload, user_id, read_as, act_as, synchronizer_id,
+                                                disclosed_contracts, commands)
 
 PreparedTransactionResponse prepare_transaction(str_ref_t token, const TransactionPayload &payload)
 {
@@ -63,12 +65,35 @@ SubmissionResponse send_transaction(str_ref_t token, const TransactionPayload &p
     req.packageIdSelectionPreference = {};
     req.disclosedContracts = payload.disclosed_contracts;
     req.commands = payload.commands;
-    
+
     return client::ledger_post("v2/commands/submit-and-wait", token, req);
 }
 
-auto send_transaction_and_wait_for_transaction_tree(str_ref_t token, const TransactionPayload &payload) {
-  
+SubmitTransactionAndWaitTreeResponse send_transaction_and_wait_for_transaction_tree(
+    str_ref_t token, const TransactionPayload &payload, vec_str_ref_t parties = {}, vec_str_ref_t template_ids = {},
+    vec_str_ref_t interface_ids = {}, bool verbose = false)
+{
+    SubmitTransaction req_commands;
+    req_commands.commandId = uuid::uuid_v4();
+    req_commands.submissionId = uuid::uuid_v4();
+    req_commands.userId = payload.user_id;
+    req_commands.readAs = payload.read_as;
+    req_commands.actAs = payload.act_as;
+    req_commands.synchronizerId = payload.synchronizer_id;
+    req_commands.packageIdSelectionPreference = {};
+    req_commands.disclosedContracts = payload.disclosed_contracts;
+    req_commands.commands = payload.commands;
+
+    const auto tx = SubmitAndWaitTreeTransaction{
+        .commmands = std::move(req_commands),
+        .transactionFormat =
+            {
+                .transactionShape = "TRANSACTION_SHAPE_ACS_DELTA",
+                .eventFormat = get_event_format(parties, template_ids, interface_ids, verbose),
+            },
+    };
+
+    return client::ledger_post("v2/commands/submit-and-wait-for-transaction", token, tx);
 }
 
 Signature build_ed25519_sig_for_party(str_ref_t party, str_ref_t private_key, str_ref_t hash)
@@ -91,8 +116,8 @@ Signature build_ed25519_sig_for_party(str_ref_t party, str_ref_t private_key, st
     return {.party = party, .signatures = {party_sig}};
 }
 
-SubmissionResponse send_signed_transaction_one_party(str_ref_t token, str_ref_t party,
-                                                     str_ref_t private_key, const TransactionPayload &payload)
+SubmissionResponse send_signed_transaction_one_party(str_ref_t token, str_ref_t party, str_ref_t private_key,
+                                                     const TransactionPayload &payload)
 {
     auto response = prepare_transaction(token, payload);
 

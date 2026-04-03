@@ -79,6 +79,21 @@ struct EventWrapper
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(EventWrapper, CreatedEvent, ExercisedEvent, ArchivedEvent)
 
+struct Transaction
+{
+    std::string updateId;
+    std::string effectiveAt;
+    node_int_t offset = 0;
+    std::vector<EventWrapper> events;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Transaction, updateId, effectiveAt, offset, events)
+
+struct SubmitTransactionAndWaitTreeResponse
+{
+    Transaction transaction;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SubmitTransactionAndWaitTreeResponse, transaction)
+
 struct Update
 {
     std::string updateId;
@@ -177,11 +192,12 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ContractEvents, created, archive
 
 struct CostEstimation
 {
-  node_int_t confirmationRequestTrafficCostEstimation;
-  node_int_t confirmationResponseTrafficCostEstimation;
-  node_int_t totalTrafficCostEstimation;
+    node_int_t confirmationRequestTrafficCostEstimation;
+    node_int_t confirmationResponseTrafficCostEstimation;
+    node_int_t totalTrafficCostEstimation;
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(CostEstimation, confirmationRequestTrafficCostEstimation, confirmationResponseTrafficCostEstimation, totalTrafficCostEstimation)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(CostEstimation, confirmationRequestTrafficCostEstimation,
+                                                confirmationResponseTrafficCostEstimation, totalTrafficCostEstimation)
 
 struct PreparedTransactionResponse
 {
@@ -191,7 +207,7 @@ struct PreparedTransactionResponse
     CostEstimation costEstimation;
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(PreparedTransactionResponse, preparedTransaction,
-  preparedTransactionHash, hashingSchemeVersion, costEstimation)
+                                                preparedTransactionHash, hashingSchemeVersion, costEstimation)
 
 struct SubmissionResponse
 {

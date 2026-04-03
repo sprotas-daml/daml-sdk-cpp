@@ -181,6 +181,12 @@ struct UpdateFormat
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(UpdateFormat, includeTransactions)
 
+struct SubmitAndWaitTreeTransaction {
+  SubmitTransaction commmands;
+  IncludeTransactions transactionFormat;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SubmitAndWaitTreeTransaction, commmands, transactionFormat)
+
 struct UpdateByIdRequest
 {
     std::string updateId;
