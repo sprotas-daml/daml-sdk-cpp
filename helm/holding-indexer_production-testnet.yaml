@@ -1,0 +1,50 @@
+---
+image_holding_indexer: ""
+image_holding_indexer_tag: ""
+
+releasePrefix: '-'
+
+generic:
+  extraImagePullSecrets:
+    - name: gitlab-docker-registry-secret
+
+deployments:
+  holding-indexer:
+    nodeSelector:
+      doks.digitalocean.com/node-pool: node-pool-canton-apps
+    podLabels:
+      app/name: holding-indexer
+    replicas: 1
+    containers:
+      - name: holding-indexer
+        ports:
+          - name: http
+            containerPort: 8080
+            protocol: TCP
+        image: '{{ $.Values.image_holding_indexer }}'
+        imageTag: '{{ $.Values.image_holding_indexer_tag }}'
+        imagePullPolicy: Always
+        command: ['/app/exe']
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 512Mi
+          requests:
+            cpu: 500m
+            memory: 128Mi
+        envSecrets:
+          - holding-indexer-secret
+
+services:
+  holding-indexer:
+    annotations:
+      kubernetes.digitalocean.com/firewall-managed: "false"
+    type: NodePort
+    ports:
+      - name: http
+        protocol: TCP
+        port: 8080
+        targetPort: http
+        nodePort: 31080
+    extraSelectorLabels:
+      app.kubernetes.io/name: holding-indexer

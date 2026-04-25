@@ -1,0 +1,14 @@
+{
+    "name": "bit-indexer",
+    "version": "1.0.0",
+    "dependencies": [
+        "libpqxx",
+        "cpr",
+        "nlohmann-json",
+        "spdlog",
+        "tomlplusplus",
+        "intx",
+        "gtest",
+        "crow"
+    ]
+}

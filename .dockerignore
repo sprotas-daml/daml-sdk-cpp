@@ -1,0 +1,28 @@
+# Build artifacts
+build/
+vcpkg_installed/
+.cmake/
+
+# vcpkg buildtrees (huge!)
+vcpkg/buildtrees/
+vcpkg/downloads/
+vcpkg/packages/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# # Git - keep .git for submodules, but exclude large objects
+# # .git/ is needed for submodule initialization
+# .git/objects/
+# .git/logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

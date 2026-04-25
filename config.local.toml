@@ -1,0 +1,33 @@
+# Example config for local_node_history runtime
+
+[poller]
+# Distances control polling window sizes
+default_poll_offset_distance = 1024
+relax_offset_distance = 256
+min_offset_distance = 1
+max_offset_distance = 4096
+succesfull_attempts_before_double_distance = 10
+max_threads = 4
+# Durations in milliseconds
+relax_delay_ms = 5000
+request_timeout_ms = 30000
+# Target template ids
+template_ids = []
+interface_ids = [
+  "#splice-api-token-holding-v1:Splice.Api.Token.HoldingV1:Holding"
+]
+  
+[parser]
+max_threads = 4
+
+[queues]
+raw_queue_capacity = 20
+parsed_queue_capacity = 10
+
+[token_scan]
+#Duration in seconds
+rescan_timeout_s = 300 #5 minutes
+request_timeout_ms = 10000
+page_size = 100
+
+

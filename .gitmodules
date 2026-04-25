@@ -1,0 +1,7 @@
+[submodule "vcpkg"]
+	path = vcpkg
+	url = https://github.com/microsoft/vcpkg.git
+
+[submodule "libs/daml-sdk"]
+	path = libs/daml-sdk
+	url = https://github.com/sprotas-daml/daml-sdk-cpp.git

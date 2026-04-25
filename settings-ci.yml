@@ -1,0 +1,42 @@
+---
+trufflehog_ignore: true
+
+deploy:
+  environment:
+    production-devnet:
+      branch: production
+      manual: true
+    production-testnet:
+      branch: production
+      manual: true
+    production-mainnet:
+      branch: production
+      manual: true
+
+apps:
+  holding-indexer:
+    image: rust:1.86.0-bookworm
+    build: false
+    test_docker: false
+    code_analysis: false
+    docker_build: true
+    runner_tags:
+      - docker
+    deploy: 
+      image: harbor.service.pixelplexlabs.com/tools/helm-kubectl-ansible:3.16
+  postgres:
+    code_analysis: false
+    build: false
+    docker_build: false
+    variables:
+      - KUBECONFIG: /root/.kube/config
+    deploy:
+      custom_deploy: true
+      image: harbor.service.pixelplexlabs.com/tools/helm-kubectl-ansible:3.16
+      before_script:
+        - chmod 400 /root/.kube/config || true
+        - kubectl get nodes
+        - kubectl config current-context
+      commands:
+        - cd ./helm
+        - helm upgrade --install --namespace 869-canton-wallet-extension-${DEPLOY_ENV} holding-indexer-db oci://registry-1.docker.io/cloudpirates/postgres  -f postgres_${DEPLOY_ENV}.yaml -f postgres_secret_${DEPLOY_ENV}.yaml --version 0.18.3 --create-namespace

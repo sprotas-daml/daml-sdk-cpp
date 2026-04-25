@@ -1,0 +1,10 @@
+vcpkg_installed
+build
+vcpkg
+.env*
+.idea
+.cache
+*.cache
+.direnv/
+.flake.nix
+flake.lock

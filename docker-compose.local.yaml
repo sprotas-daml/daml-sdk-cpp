@@ -1,0 +1,30 @@
+services:
+  dog-indexer:
+    image: dog-indexer
+    build:
+      context: ./
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: postgres:18.0
+    # Increase connection limit (requires container restart/recreate).
+    # Note: higher max_connections increases RAM usage.
+    command: [ "postgres", "-c", "max_connections=528" ]
+    shm_size: 1gb
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\"" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "55432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql
+volumes:
+  db-data:
