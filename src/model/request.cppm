@@ -148,26 +148,6 @@ struct CumulativeFilters
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(CumulativeFilters, cumulative)
 
-struct BaseFilter
-{
-    bool verbose;
-    json filter;
-};
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(BaseFilter, verbose, filter)
-
-struct FlatUpdatesRequest : public BaseFilter
-{
-    node_int_t beginExclusive;
-    node_int_t endInclusive;
-};
-NLOHMANN_DEFINE_DERIVED_TYPE_NON_INTRUSIVE_WITH_DEFAULT(FlatUpdatesRequest, BaseFilter, beginExclusive, endInclusive)
-
-struct ActiveContractSetRequest : public BaseFilter
-{
-    node_int_t activeAtOffset;
-};
-NLOHMANN_DEFINE_DERIVED_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ActiveContractSetRequest, BaseFilter, activeAtOffset)
-
 struct IncludeTransactions
 {
     std::string transactionShape = "TRANSACTION_SHAPE_ACS_DELTA";
@@ -180,6 +160,22 @@ struct UpdateFormat
     IncludeTransactions includeTransactions;
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(UpdateFormat, includeTransactions)
+
+struct UpdatesRequest
+{
+    node_int_t beginExclusive;
+    node_int_t endInclusive;
+    UpdateFormat updateFormat;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(UpdatesRequest, beginExclusive, endInclusive, updateFormat)
+
+struct ActiveContractSetRequest
+{
+    node_int_t activeAtOffset;
+    bool verbose;
+    json filter;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ActiveContractSetRequest, activeAtOffset, verbose, filter)
 
 struct SubmitAndWaitTreeTransaction {
   SubmitTransaction commands;

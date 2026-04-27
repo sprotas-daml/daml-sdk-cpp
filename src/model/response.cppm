@@ -24,6 +24,8 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(InterfaceView, interfaceId, view
 
 struct CreatedEvent
 {
+    node_int_t offset;
+    node_int_t nodeId;
     std::string contractId;
     std::string templateId;
     json createArgument;
@@ -37,12 +39,15 @@ struct CreatedEvent
     std::string representativePackageId;
     bool acsDelta{};
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(CreatedEvent, contractId, templateId, createArgument, createdEventBlob,
-                                                interfaceViews, witnessParties, signatories, observers, createdAt,
-                                                packageName, representativePackageId, acsDelta)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(CreatedEvent, offset, nodeId, contractId, templateId, createArgument,
+                                                createdEventBlob, interfaceViews, witnessParties, signatories,
+                                                observers, createdAt, packageName, representativePackageId, acsDelta)
 
 struct ExercisedEvent
 {
+    node_int_t offset;
+    node_int_t nodeId;
+    node_int_t lastDescendantNodeId;
     std::string contractId;
     std::string templateId;
     std::optional<std::string> interfaceId;
@@ -56,20 +61,23 @@ struct ExercisedEvent
     std::vector<std::string> implementedInterfaces;
     bool acsDelta{};
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExercisedEvent, contractId, templateId, interfaceId, choice,
-                                                choiceArgument, actingParties, consuming, witnessParties,
-                                                exerciseResult, packageName, implementedInterfaces, acsDelta)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExercisedEvent, offset, nodeId, lastDescendantNodeId, contractId,
+                                                templateId, interfaceId, choice, choiceArgument, actingParties,
+                                                consuming, witnessParties, exerciseResult, packageName,
+                                                implementedInterfaces, acsDelta)
 
 struct ArchivedEvent
 {
+    node_int_t offset;
+    node_int_t nodeId;
     std::string contractId;
     std::string templateId;
     std::vector<std::string> witnessParties;
     std::string packageName;
     std::vector<std::string> implementedInterfaces;
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ArchivedEvent, contractId, templateId, witnessParties, packageName,
-                                                implementedInterfaces)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ArchivedEvent, offset, nodeId, contractId, templateId, witnessParties,
+                                                packageName, implementedInterfaces)
 
 struct EventWrapper
 {

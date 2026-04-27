@@ -4,6 +4,7 @@ module;
 #include <nlohmann/json.hpp>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 
 export module daml.api:ledger;
 
@@ -15,7 +16,6 @@ import daml.type;
 
 export namespace daml::api::request
 {
-using int_t = std::uint64_t;
 using str_ref_t = const std::string &;
 using vec_str_ref_t = const std::vector<std::string> &;
 using json = nlohmann::json;
@@ -23,6 +23,19 @@ using json = nlohmann::json;
 using namespace daml::utils::json_literals;
 using namespace daml::model::request;
 using namespace daml::model::response;
+
+enum TransactionShape
+{
+    Unspecified,
+    AcsDelta,
+    LedgerEffects,
+};
+
+const std::unordered_map<TransactionShape, std::string> transaction_shape_map = {
+    {TransactionShape::Unspecified, "TRANSACTION_SHAPE_UNSPECIFIED"},
+    {TransactionShape::AcsDelta, "TRANSACTION_SHAPE_ACS_DELTA"},
+    {TransactionShape::LedgerEffects, "TRANSACTION_SHAPE_LEDGER_EFFECTS"},
+};
 
 bool check_and_grant_rights(str_ref_t token, str_ref_t user_id)
 {
@@ -53,13 +66,9 @@ bool check_and_grant_rights(str_ref_t token, str_ref_t user_id)
     return true;
 }
 
-int_t get_ledger_end(str_ref_t token)
+node_int_t get_ledger_end(str_ref_t token)
 {
-    int64_t offset_value = client::ledger_get("/v2/state/ledger-end", token).at("offset").get<int64_t>();
-    if (offset_value < std::numeric_limits<int_t>::min() || offset_value > std::numeric_limits<int_t>::max())
-        throw std::runtime_error(std::format("[get_ledger_end] offset out of int32 range: {}", offset_value));
-
-    return static_cast<int_t>(offset_value);
+    return client::ledger_get("/v2/state/ledger-end", token).at("offset").get<node_int_t>();
 }
 
 json get_filters(vec_str_ref_t parties, vec_str_ref_t template_ids, vec_str_ref_t interface_ids)
@@ -131,86 +140,102 @@ json get_event_format(vec_str_ref_t parties, vec_str_ref_t template_ids, vec_str
     return j;
 }
 
-std::vector<Update> get_updates_flats(str_ref_t token, int_t from, int_t to, vec_str_ref_t template_ids,
-                                      vec_str_ref_t interface_ids, vec_str_ref_t parties)
+std::vector<Update> get_updates_flats(str_ref_t token, node_int_t from, node_int_t to, vec_str_ref_t template_ids,
+                                      vec_str_ref_t interface_ids, vec_str_ref_t parties,
+                                      TransactionShape transaction_shape = TransactionShape::AcsDelta)
 {
-    FlatUpdatesRequest req;
-    req.beginExclusive = from;
-    req.endInclusive = to;
-    req.verbose = false;
-    req.filter = get_filters(parties, template_ids, interface_ids);
+    UpdatesRequest req = {
+        .beginExclusive = from,
+        .endInclusive = to,
+        .updateFormat =
+            {
+                .includeTransactions =
+                    {
+                        .transactionShape = transaction_shape_map.at(transaction_shape),
+                        .eventFormat = get_event_format(parties, template_ids, interface_ids, true),
+                    },
+            },
+    };
 
     return client::ledger_post("v2/updates/flats", token, req);
 }
 
-std::vector<Update> get_updates_flats_by_template(str_ref_t token, int_t from, int_t to, vec_str_ref_t template_ids)
+std::vector<Update> get_updates_flats_by_template(str_ref_t token, node_int_t from, node_int_t to,
+                                                  vec_str_ref_t template_ids,
+                                                  TransactionShape transaction_shape = TransactionShape::AcsDelta)
 {
-    return get_updates_flats(token, from, to, template_ids, {}, {});
+    return get_updates_flats(token, from, to, template_ids, {}, {}, transaction_shape);
 }
 
-std::vector<Update> get_updates_flats_by_template_and_interface(str_ref_t token, int_t from, int_t to,
-                                                                vec_str_ref_t template_ids, vec_str_ref_t interface_ids)
+std::vector<Update> get_updates_flats_by_template_and_interface(
+    str_ref_t token, node_int_t from, node_int_t to, vec_str_ref_t template_ids, vec_str_ref_t interface_ids,
+    TransactionShape transaction_shape = TransactionShape::AcsDelta)
 {
-    return get_updates_flats(token, from, to, template_ids, interface_ids, {});
+    return get_updates_flats(token, from, to, template_ids, interface_ids, {}, transaction_shape);
 }
 
-std::vector<Update> get_updates_flats_by_template_and_interface_with_parties(str_ref_t token, int_t from, int_t to,
-                                                                             vec_str_ref_t template_ids,
-                                                                             vec_str_ref_t interface_ids,
-                                                                             vec_str_ref_t parties)
+std::vector<Update> get_updates_flats_by_template_and_interface_with_parties(
+    str_ref_t token, node_int_t from, node_int_t to, vec_str_ref_t template_ids, vec_str_ref_t interface_ids,
+    vec_str_ref_t parties, TransactionShape transaction_shape = TransactionShape::AcsDelta)
 {
-    return get_updates_flats(token, from, to, template_ids, interface_ids, parties);
+    return get_updates_flats(token, from, to, template_ids, interface_ids, parties, transaction_shape);
 }
-std::vector<Update> get_updates_flats_by_interface(str_ref_t token, int_t from, int_t to, vec_str_ref_t interface_ids)
+std::vector<Update> get_updates_flats_by_interface(str_ref_t token, node_int_t from, node_int_t to,
+                                                   vec_str_ref_t interface_ids,
+                                                   TransactionShape transaction_shape = TransactionShape::AcsDelta)
 {
-    return get_updates_flats(token, from, to, {}, interface_ids, {});
+    return get_updates_flats(token, from, to, {}, interface_ids, {}, transaction_shape);
 }
-std::vector<Update> get_updates_flats_by_template_with_parties(str_ref_t token, int_t from, int_t to,
-                                                               vec_str_ref_t template_ids, vec_str_ref_t parties)
+std::vector<Update> get_updates_flats_by_template_with_parties(
+    str_ref_t token, node_int_t from, node_int_t to, vec_str_ref_t template_ids, vec_str_ref_t parties,
+    TransactionShape transaction_shape = TransactionShape::AcsDelta)
 {
-    return get_updates_flats(token, from, to, template_ids, {}, parties);
+    return get_updates_flats(token, from, to, template_ids, {}, parties, transaction_shape);
 }
-std::vector<Update> get_updates_flats_by_interface_with_parties(str_ref_t token, int_t from, int_t to,
-                                                                vec_str_ref_t interface_ids, vec_str_ref_t parties)
+std::vector<Update> get_updates_flats_by_interface_with_parties(
+    str_ref_t token, node_int_t from, node_int_t to, vec_str_ref_t interface_ids, vec_str_ref_t parties,
+    TransactionShape transaction_shape = TransactionShape::AcsDelta)
 {
-    return get_updates_flats(token, from, to, {}, interface_ids, parties);
+    return get_updates_flats(token, from, to, {}, interface_ids, parties, transaction_shape);
 }
 
-std::vector<ActiveContract> get_active_contract_set(str_ref_t token, int_t offset, vec_str_ref_t template_ids,
+std::vector<ActiveContract> get_active_contract_set(str_ref_t token, node_int_t offset, vec_str_ref_t template_ids,
                                                     vec_str_ref_t interface_ids, vec_str_ref_t parties)
 {
-    ActiveContractSetRequest req;
-    req.activeAtOffset = offset;
-    req.verbose = false;
-    req.filter = get_filters(parties, template_ids, interface_ids);
+    ActiveContractSetRequest req = {
+        .activeAtOffset = offset,
+        .verbose = false,
+        .filter = get_filters(parties, template_ids, interface_ids),
+    };
 
     return client::ledger_post("v2/state/active-contracts", token, req, {{"limit", "200"}});
 }
 
-std::vector<ActiveContract> get_active_contract_set_by_template(str_ref_t token, int_t offset,
+std::vector<ActiveContract> get_active_contract_set_by_template(str_ref_t token, node_int_t offset,
                                                                 vec_str_ref_t template_ids)
 {
     return get_active_contract_set(token, offset, template_ids, {}, {});
 }
-std::vector<ActiveContract> get_active_contract_set_by_interface(str_ref_t token, int_t offset,
+std::vector<ActiveContract> get_active_contract_set_by_interface(str_ref_t token, node_int_t offset,
                                                                  vec_str_ref_t interface_ids)
 {
     return get_active_contract_set(token, offset, {}, interface_ids, {});
 }
-std::vector<ActiveContract> get_active_contract_set_by_template_with_parties(str_ref_t token, int_t offset,
+std::vector<ActiveContract> get_active_contract_set_by_template_with_parties(str_ref_t token, node_int_t offset,
                                                                              vec_str_ref_t template_ids,
                                                                              vec_str_ref_t parties)
 {
     return get_active_contract_set(token, offset, template_ids, {}, parties);
 }
-std::vector<ActiveContract> get_active_contract_set_by_interface_with_parties(str_ref_t token, int_t offset,
+std::vector<ActiveContract> get_active_contract_set_by_interface_with_parties(str_ref_t token, node_int_t offset,
                                                                               vec_str_ref_t interface_ids,
                                                                               vec_str_ref_t parties)
 {
     return get_active_contract_set(token, offset, {}, interface_ids, parties);
 }
 
-Update get_update_by_id_with_parties(str_ref_t token, str_ref_t update_id, vec_str_ref_t parties)
+Update get_update_by_id_with_parties(str_ref_t token, str_ref_t update_id, vec_str_ref_t parties,
+                                     TransactionShape transaction_shape = TransactionShape::AcsDelta)
 {
     UpdateByIdRequest req = {
         .updateId = update_id,
@@ -218,7 +243,7 @@ Update get_update_by_id_with_parties(str_ref_t token, str_ref_t update_id, vec_s
             {
                 .includeTransactions =
                     {
-                        .transactionShape = "TRANSACTION_SHAPE_ACS_DELTA",
+                        .transactionShape = transaction_shape_map.at(transaction_shape),
                         .eventFormat = get_event_format(parties, {}, {}, true),
                     },
             },
@@ -227,7 +252,8 @@ Update get_update_by_id_with_parties(str_ref_t token, str_ref_t update_id, vec_s
     return client::ledger_post("v2/updates/update-by-id", token, req);
 }
 
-Update get_update_by_id(str_ref_t token, str_ref_t update_id)
+Update get_update_by_id(str_ref_t token, str_ref_t update_id,
+                        TransactionShape transaction_shape = TransactionShape::AcsDelta)
 {
     return get_update_by_id_with_parties(token, update_id, {});
 };
