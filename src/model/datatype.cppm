@@ -190,30 +190,6 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Transfer, sender, provider, inpu
 
 // data Transfer AmuletRules.daml
 
-// data HoldingView HoldingV1.daml
-struct Lock
-{ // TODO: add more info about Lock
-    std::vector<std::string> holders;
-};
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Lock, holders)
-
-struct InstrumentId
-{
-    std::string admin;
-    std::string id;
-};
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(InstrumentId, admin, id)
-
-struct HoldingView
-{
-    std::string owner;
-    decimal::decimal amount;
-    InstrumentId instrumentId;
-    std::optional<Lock> lock;
-};
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(HoldingView, owner, amount, instrumentId, lock)
-// data HoldingView HoldingV1.daml
-
 namespace metadata_v1
 {
 struct AnyValue
@@ -291,6 +267,31 @@ struct ExtraArgs
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExtraArgs, context, meta)
 } // namespace metadata_v1
 
+// data HoldingView HoldingV1.daml
+struct Lock
+{ // TODO: add more info about Lock
+    std::vector<std::string> holders;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Lock, holders)
+
+struct InstrumentId
+{
+    std::string admin;
+    std::string id;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(InstrumentId, admin, id)
+
+struct HoldingView
+{
+    std::string owner;
+    decimal::decimal amount;
+    InstrumentId instrumentId;
+    std::optional<Lock> lock;
+    metadata_v1::Metadata meta;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(HoldingView, owner, amount, instrumentId, lock, meta)
+// data HoldingView HoldingV1.daml
+
 namespace transfer_instruction_v1
 {
 
@@ -308,6 +309,71 @@ struct Transfer
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Transfer, sender, receiver, amount, instrumentId, requestedAt,
                                                 executeBefore, inputHoldingCids, meta)
 
+struct TransferInstructionResult_Pending
+{
+    std::string transferInstructionCid;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TransferInstructionResult_Pending, transferInstructionCid)
+
+struct TransferInstructionResult_Completed
+{
+    std::vector<std::string> receiverHoldingCids;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TransferInstructionResult_Completed, receiverHoldingCids)
+
+struct TransferInstructionResult_Failed
+{
+};
+void to_json(json &j, const TransferInstructionResult_Failed &)
+{
+    j = json::object();
+}
+void from_json(const json &, TransferInstructionResult_Failed &)
+{
+}
+
+using TransferInstructionResult_Output =
+    std::variant<TransferInstructionResult_Pending, TransferInstructionResult_Completed,
+                 TransferInstructionResult_Failed>;
+
+struct TransferInstructionResult
+{
+    TransferInstructionResult_Output output;
+    std::vector<std::string> senderChangeCids;
+    metadata_v1::Metadata meta;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(TransferInstructionResult, output, senderChangeCids, meta)
+
+struct TransferPendingReceiverAcceptance
+{
+};
+
+void to_json(json &j, const TransferPendingReceiverAcceptance &)
+{
+    j = json::object();
+}
+void from_json(const json &, TransferPendingReceiverAcceptance &)
+{
+}
+
+struct TransferPendingInternalWorkflow
+{
+    std::map<std::string, std::string> pendingActions;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TransferPendingInternalWorkflow, pendingActions)
+
+using TransferInstructionStatus = std::variant<TransferPendingReceiverAcceptance, TransferPendingInternalWorkflow>;
+
+struct TransferInstructionView
+{
+    std::optional<std::string> originalInstructionCid;
+    Transfer transfer;
+    TransferInstructionStatus status;
+    metadata_v1::Metadata meta;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(TransferInstructionView, originalInstructionCid, transfer, status, meta)
+
 struct TransferFactory_Transfer
 {
     std::string expectedAdmin;
@@ -317,3 +383,91 @@ struct TransferFactory_Transfer
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(TransferFactory_Transfer, expectedAdmin, transfer, extraArgs)
 } // namespace transfer_instruction_v1
 } // namespace daml::model::datatype
+
+namespace nlohmann
+{
+using namespace daml::model::datatype::transfer_instruction_v1;
+
+template <> struct adl_serializer<TransferInstructionStatus>
+{
+    static void to_json(json &j, const TransferInstructionStatus &status)
+    {
+        std::visit(
+            [&j](auto &&arg) {
+                using T = std::decay_t<decltype(arg)>;
+                if constexpr (std::is_same_v<T, TransferPendingReceiverAcceptance>)
+                {
+                    j["tag"] = "TransferPendingReceiverAcceptance";
+                    j["value"] = arg;
+                }
+                else if constexpr (std::is_same_v<T, TransferPendingInternalWorkflow>)
+                {
+                    j["tag"] = "TransferPendingInternalWorkflow";
+                    j["value"] = arg;
+                }
+            },
+            status);
+    }
+
+    static void from_json(const json &j, TransferInstructionStatus &status)
+    {
+        std::string tag = j.at("tag").get<std::string>();
+
+        if (tag == "TransferPendingReceiverAcceptance")
+        {
+            status = j.at("value").get<TransferPendingReceiverAcceptance>();
+        }
+        else if (tag == "TransferPendingInternalWorkflow")
+        {
+            status = j.at("value").get<TransferPendingInternalWorkflow>();
+        }
+        else
+        {
+            throw std::runtime_error("Unknown tag for TransferInstructionStatus: " + tag);
+        }
+    }
+};
+template <> struct adl_serializer<TransferInstructionResult_Output>
+{
+    static void to_json(json &j, const TransferInstructionResult_Output &res)
+    {
+        std::visit(
+            [&j](auto &&arg) {
+                using T = std::decay_t<decltype(arg)>;
+                if constexpr (std::is_same_v<T, TransferInstructionResult_Pending>)
+                {
+                    j["tag"] = "TransferInstructionResult_Pending";
+                    j["value"] = arg;
+                }
+                else if constexpr (std::is_same_v<T, TransferInstructionResult_Completed>)
+                {
+                    j["tag"] = "TransferInstructionResult_Completed";
+                    j["value"] = arg;
+                }
+                else if constexpr (std::is_same_v<T, TransferInstructionResult_Failed>)
+                {
+                    j["tag"] = "TransferInstructionResult_Failed";
+                    j["value"] = arg;
+                }
+            },
+            res);
+    }
+
+    static void from_json(const json &j, TransferInstructionResult_Output &res)
+    {
+        std::string tag = j.at("tag").get<std::string>();
+        if (tag == "TransferInstructionResult_Pending")
+        {
+            res = j.at("value").get<TransferInstructionResult_Pending>();
+        }
+        else if (tag == "TransferInstructionResult_Completed")
+        {
+            res = j.at("value").get<TransferInstructionResult_Completed>();
+        }
+        else if (tag == "TransferInstructionResult_Failed")
+        {
+            res = j.at("value").get<TransferInstructionResult_Failed>();
+        }
+    }
+};
+} // namespace nlohmann

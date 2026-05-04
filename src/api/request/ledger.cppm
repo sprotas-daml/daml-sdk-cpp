@@ -71,7 +71,7 @@ node_int_t get_ledger_end(str_ref_t token)
     return client::ledger_get("/v2/state/ledger-end", token).at("offset").get<node_int_t>();
 }
 
-json get_filters(vec_str_ref_t parties, vec_str_ref_t template_ids, vec_str_ref_t interface_ids)
+json get_filters(vec_str_ref_t parties, vec_str_ref_t template_ids, vec_str_ref_t interface_ids, bool use_wildcard = false)
 {
     CumulativeFilters filters;
     for (const auto &interface_id : interface_ids)
@@ -103,7 +103,7 @@ json get_filters(vec_str_ref_t parties, vec_str_ref_t template_ids, vec_str_ref_
         });
     }
 
-    if (filters.cumulative.empty())
+    if (use_wildcard || filters.cumulative.empty())
     {
         filters.cumulative.emplace_back(FilterPayload{
             .identifierFilter =
@@ -133,9 +133,9 @@ json get_filters(vec_str_ref_t parties, vec_str_ref_t template_ids, vec_str_ref_
     };
 }
 
-json get_event_format(vec_str_ref_t parties, vec_str_ref_t template_ids, vec_str_ref_t interface_ids, bool verbose)
+json get_event_format(vec_str_ref_t parties, vec_str_ref_t template_ids, vec_str_ref_t interface_ids, bool verbose, bool use_wildcard = false)
 {
-    auto j = get_filters(parties, template_ids, interface_ids);
+    auto j = get_filters(parties, template_ids, interface_ids, use_wildcard);
     j["verbose"] = verbose;
     return j;
 }
@@ -234,6 +234,25 @@ std::vector<ActiveContract> get_active_contract_set_by_interface_with_parties(st
     return get_active_contract_set(token, offset, {}, interface_ids, parties);
 }
 
+Update get_update_by_id_with_filters(str_ref_t token, str_ref_t update_id, vec_str_ref_t template_ids,
+                                     vec_str_ref_t interface_ids, bool use_wildcard,
+                                     TransactionShape transaction_shape = TransactionShape::AcsDelta)
+{
+    UpdateByIdRequest req = {
+        .updateId = update_id,
+        .updateFormat =
+            {
+                .includeTransactions =
+                    {
+                        .transactionShape = transaction_shape_map.at(transaction_shape),
+                        .eventFormat = get_event_format({}, template_ids, interface_ids, true, use_wildcard),
+                    },
+            },
+    };
+
+    return client::ledger_post("v2/updates/update-by-id", token, req);
+}
+
 Update get_update_by_id_with_parties(str_ref_t token, str_ref_t update_id, vec_str_ref_t parties,
                                      TransactionShape transaction_shape = TransactionShape::AcsDelta)
 {
@@ -255,7 +274,7 @@ Update get_update_by_id_with_parties(str_ref_t token, str_ref_t update_id, vec_s
 Update get_update_by_id(str_ref_t token, str_ref_t update_id,
                         TransactionShape transaction_shape = TransactionShape::AcsDelta)
 {
-    return get_update_by_id_with_parties(token, update_id, {});
+    return get_update_by_id_with_parties(token, update_id, {}, transaction_shape);
 };
 
 ContractEvents get_contract_by_id_with_parties(str_ref_t token, str_ref_t contract_id, vec_str_ref_t parties)
