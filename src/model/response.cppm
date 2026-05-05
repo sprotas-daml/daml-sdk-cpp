@@ -81,9 +81,9 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ArchivedEvent, offset, nodeId, c
 
 struct EventWrapper
 {
-    std::optional<CreatedEvent> CreatedEvent;
-    std::optional<ExercisedEvent> ExercisedEvent;
-    std::optional<ArchivedEvent> ArchivedEvent;
+    std::optional<response::CreatedEvent> CreatedEvent;
+    std::optional<response::ExercisedEvent> ExercisedEvent;
+    std::optional<response::ArchivedEvent> ArchivedEvent;
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(EventWrapper, CreatedEvent, ExercisedEvent, ArchivedEvent)
 
